@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: toplap-runner
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [20]
