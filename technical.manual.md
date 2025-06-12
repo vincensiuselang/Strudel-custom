@@ -54,7 +54,7 @@ This is how it works:
 - The AST is transformed to resolve the syntax sugar
 - The AST is used to generate code again (shift-codegen)
 
-Shift will most likely be replaced with acorn in the future, see https://github.com/tidalcycles/strudel/issues/174
+Shift will most likely be replaced with acorn in the future, see https://codeberg.org/uzu/strudel/issues/174
 
 ### Mini Notation
 
