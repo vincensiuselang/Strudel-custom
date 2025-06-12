@@ -6,6 +6,13 @@ Thanks for wanting to contribute!!! There are many ways you can add value to thi
 
 We are currently in the process of moving from github to codeberg -- not everything is working, please bear with us.
 
+To update your local clone, you can run this command:
+
+```
+git remote set-url origin git@codeberg.org:uzu/strudel.git
+```
+
+
 ## Communication Channels
 
 To get in touch with the contributors, either
