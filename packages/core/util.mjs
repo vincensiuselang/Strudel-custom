@@ -162,6 +162,7 @@ export const compose = (...funcs) => pipe(...funcs.reverse());
 // Removes 'None' values from given list
 export const removeUndefineds = (xs) => xs.filter((x) => x != undefined);
 
+// flattens by one level
 export const flatten = (arr) => [].concat(...arr);
 
 export const id = (a) => a;
@@ -237,6 +238,7 @@ export const splitAt = function (index, value) {
   return [value.slice(0, index), value.slice(index)];
 };
 
+// Uses the function f to combine the arrays xs, ys element-wise
 export const zipWith = (f, xs, ys) => xs.map((n, i) => f(n, ys[i]));
 
 export const pairs = function (xs) {
