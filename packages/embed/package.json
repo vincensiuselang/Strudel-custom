@@ -6,7 +6,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://codeberg.org/uzu/strudel.git
+    "url": "git+https://codeberg.org/uzu/strudel.git"
   },
   "keywords": [
     "tidalcycles",
