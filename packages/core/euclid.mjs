@@ -12,6 +12,7 @@ This program is free software: you can redistribute it and/or modify it under th
 
 import { timeCat, register, silence } from './pattern.mjs';
 import { rotate, flatten, splitAt, zipWith } from './util.mjs';
+import Fraction, { lcm } from './fraction.mjs';
 
 const left = function (n, x) {
   const [ons, offs] = n;
@@ -165,7 +166,7 @@ const _euclidLegato = function (pulses, steps, rotation, pat) {
     .split('1')
     .slice(1)
     .map((s) => [s.length + 1, true]);
-  return pat.struct(timeCat(...gapless)).late(rotation / steps);
+  return pat.struct(timeCat(...gapless)).late(Fraction(rotation).div(steps));
 };
 
 export const euclidLegato = register(['euclidLegato'], function (pulses, steps, pat) {
