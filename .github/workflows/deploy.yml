@@ -34,4 +34,4 @@ jobs:
           apt update && apt install -y rsync
           mkdir ~/.ssh
           ssh-keyscan matrix.toplap.org  > ~/.ssh/known_hosts
-          rsync -atv --progress ./website/dist strudel@matrix.toplap.org:/home/strudel/dist
+          rsync -atv --progress ./website/dist/ strudel@matrix.toplap.org:/home/strudel/deploy
