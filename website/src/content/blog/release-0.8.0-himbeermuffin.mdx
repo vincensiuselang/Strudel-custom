@@ -6,7 +6,7 @@ tags: ['meta']
 author: froos
 ---
 
-import BlogVideo from '../../components/BlogVideo.astro';
+import { Youtube } from '@src/components/Youtube';
 
 These are the release notes for Strudel 0.8.0 aka "Himbeermuffin"!
 
@@ -18,11 +18,11 @@ Let me write up some of the highlights:
 
 Besides the REPL (https://strudel.tidalcycles.org/), Strudel is now also distributed as a Desktop App via https://tauri.app/! Thanks to [vasilymilovidov](https://github.com/vasilymilovidov)!
 
-- [Linux: Debian based](https://github.com/tidalcycles/strudel/releases/download/v0.8.0/strudel_0.1.0_amd64.deb)
-- [Linux: AppImage](https://github.com/tidalcycles/strudel/releases/download/v0.8.0/strudel_0.1.0_amd64.AppImage)
-- [MacOS](https://github.com/tidalcycles/strudel/releases/download/v0.8.0/Strudel_0.1.0_x64.dmg)
-- [Windows .exe](https://github.com/tidalcycles/strudel/releases/download/v0.8.0/Strudel_0.1.0_x64-setup.exe)
-- [Windows .msi](https://github.com/tidalcycles/strudel/releases/download/v0.8.0/Strudel_0.1.0_x64_en-US.msi)
+- [Linux: Debian based](https://codeberg.org/uzu/strudel/releases/download/v0.8.0/strudel_0.1.0_amd64.deb)
+- [Linux: AppImage](https://codeberg.org/uzu/strudel/releases/download/v0.8.0/strudel_0.1.0_amd64.AppImage)
+- [MacOS](https://codeberg.org/uzu/strudel/releases/download/v0.8.0/Strudel_0.1.0_x64.dmg)
+- [Windows .exe](https://codeberg.org/uzu/strudel/releases/download/v0.8.0/Strudel_0.1.0_x64-setup.exe)
+- [Windows .msi](https://codeberg.org/uzu/strudel/releases/download/v0.8.0/Strudel_0.1.0_x64_en-US.msi)
 
 edit: the desktop app performance on linux is currently not that great.. the web REPL runs much smoother (using firefox or chromium)
 
@@ -43,7 +43,7 @@ I would be very happy to collect some feedback on how it works across different 
 
 Also still undocumented, but you can now visualize patterns as a spiral via `.spiral()`:
 
-<BlogVideo src="https://github.com/tidalcycles/strudel/assets/12023032/05bc2dba-b304-4298-9465-a1a6fafe5ded" />
+<Youtube client:only="react" id="24bSHhEdUeM" />
 
 This is especially nice because strudel is not only the name of a dessert but also the german word for vortex! The spiral is very fitting to visualize cycles because you can align cycles vertically, while surfing along an infinite twisted timeline.
 

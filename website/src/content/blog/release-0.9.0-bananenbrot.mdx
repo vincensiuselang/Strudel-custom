@@ -6,8 +6,6 @@ tags: ['meta']
 author: froos
 ---
 
-import BlogVideo from '../../components/BlogVideo.astro';
-
 These are the release notes for Strudel 0.9.0 aka "Bananenbrot"!
 
 The last release was over 11 weeks ago, so a lot of things have happened!
@@ -25,7 +23,9 @@ Main new features include:
 - [vibrato](https://strudel.tidalcycles.org/learn/synths#vibrato)
 - an integration of [ZZFX](https://strudel.tidalcycles.org/learn/synths#zzfx)
 
-<BlogVideo src="https://github.com/tidalcycles/strudel/assets/12023032/652e7042-f296-496b-95cd-b2a4987fe238" />
+import { Youtube } from '@src/components/Youtube';
+
+<Youtube client:only="react" id="5ByKVG7jiO4" />
 
 Related PRs:
 
