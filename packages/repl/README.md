@@ -17,7 +17,7 @@ You can also pin the version like this:
 ```
 
 This has the advantage that your code will always work, regardless of potential breaking changes in the strudel codebase.
-See [releases](https://github.com/tidalcycles/strudel/releases) for the latest versions.
+See [releases](https://codeberg.org/uzu/strudel/releases) for the latest versions.
 
 ## Use Web Component
 

@@ -42,7 +42,7 @@ export function WelcomeTab({ context }) {
           GNU Affero General Public License
         </a>
         . You can find the source code at{' '}
-        <a href="https://github.com/tidalcycles/strudel" target="_blank">
+        <a href="https://codeberg.org/uzu/strudel" target="_blank">
           github
         </a>
         . You can also find <a href="https://github.com/felixroos/dough-samples/blob/main/README.md">licensing info</a>{' '}
