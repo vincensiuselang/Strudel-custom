@@ -1,8 +1,9 @@
 # strudel
 
-[![Strudel test status](https://github.com/tidalcycles/strudel/actions/workflows/test.yml/badge.svg)](https://github.com/tidalcycles/strudel/actions) [![DOI](https://zenodo.org/badge/450927247.svg)](https://doi.org/10.5281/zenodo.6659278)
+Live coding patterns on the web
+https://strudel.cc/
 
-An experiment in making a [Tidal](https://github.com/tidalcycles/tidal/) using web technologies. This software is a bit more stable now, but please continue to tread carefully.
+Development is moving to https://codeberg.org/uzu/strudel
 
 - Try it here: <https://strudel.cc>
 - Docs: <https://strudel.cc/learn>
