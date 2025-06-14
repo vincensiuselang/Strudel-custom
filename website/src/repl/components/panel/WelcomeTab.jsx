@@ -38,7 +38,7 @@ export function WelcomeTab({ context }) {
         </a>
         , which is a popular live coding language for music, written in Haskell. Strudel is free/open source software:
         you can redistribute and/or modify it under the terms of the{' '}
-        <a href="https://github.com/tidalcycles/strudel/blob/main/LICENSE" target="_blank">
+        <a href="https://codeberg.org/uzu/strudel/src/branch/main/LICENSE" target="_blank">
           GNU Affero General Public License
         </a>
         . You can find the source code at{' '}

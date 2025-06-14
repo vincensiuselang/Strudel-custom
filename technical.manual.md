@@ -17,7 +17,7 @@ More info in the [REPL README](https://codeberg.org/uzu/strudel/src/branch/main/
 
 # High Level Overview
 
-<img src="https://github.com/tidalcycles/strudel/blob/talk/talk/public/strudelflow.png?raw=true" width="600" />
+<img src="https://codeberg.org/uzu/strudel/raw/branch/talk/talk/public/strudelflow.png" width="600" />
 
 ## 1. End User Code
 
@@ -48,7 +48,7 @@ mini('c3 [e3 g3]')
 
 This is how it works:
 
-<img src="https://github.com/tidalcycles/strudel/blob/talk/talk/public/shiftflow.png?raw=true" width="800" />
+<img src="https://codeberg.org/uzu/strudel/raw/branch/talk/talk/public/shiftflow.png" width="800" />
 
 - The user code is parsed with a [shift parser](https://github.com/shapesecurity/shift-parser-js), generating an AST
 - The AST is transformed to resolve the syntax sugar
@@ -171,7 +171,7 @@ Here is an example Hap value with different properties:
 ```js
 { note: 'a4', s: 'sawtooth', gain: 0.5, cutoff: 267 }
 ```
-<img src="https://github.com/tidalcycles/strudel/blob/talk/talk/public/waa-nodes.png?raw=true" width="600" />
+<img src="https://codeberg.org/uzu/strudel/raw/branch/talk/talk/public/waa-nodes.png" width="600" />
 
 <div className="text-left">
 
