@@ -70,7 +70,7 @@ export function Reference() {
               <ul>
                 {entry.params?.map(({ name, type, description }, i) => (
                   <li key={i}>
-                    {name} : {type.names?.join(' | ')} {description ? <> - {getInnerText(description)}</> : ''}
+                    {name} : {type?.names?.join(' | ')} {description ? <> - {getInnerText(description)}</> : ''}
                   </li>
                 ))}
               </ul>
