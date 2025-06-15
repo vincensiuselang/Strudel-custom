@@ -884,7 +884,7 @@ describe('Pattern', () => {
       );
     });
     it('Doesnt drop haps in the 9th cycle', () => {
-      // fixed with https://github.com/tidalcycles/strudel/commit/72eeaf446e3d5e186d63cc0d2276f0723cde017a
+      // fixed with https://codeberg.org/uzu/strudel/commit/72eeaf446e3d5e186d63cc0d2276f0723cde017a
       expect(sequence(1, 2, 3).ply(2).early(8).firstCycle().length).toBe(6);
     });
   });
