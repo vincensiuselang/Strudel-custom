@@ -575,7 +575,7 @@ export const superdough = async (value, t, hapDuration, cps) => {
 
   let audioNodes = [];
 
-  if (['-', '~'].includes(s)) {
+  if (['-', '~', '_'].includes(s)) {
     return;
   }
   if (bank && s) {

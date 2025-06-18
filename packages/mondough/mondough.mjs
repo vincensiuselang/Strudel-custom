@@ -28,6 +28,7 @@ let nope = (...args) => args[args.length - 1];
 let lib = {};
 lib['nope'] = nope;
 lib['-'] = silence;
+lib['_'] = silence;
 lib['~'] = silence;
 lib.curly = stepcat;
 lib.square = (...args) => stepcat(...args).setSteps(1);

@@ -20,7 +20,8 @@ export class MondoParser {
     open_curly: /^\{/,
     close_curly: /^\}/,
     number: /^-?[0-9]*\.?[0-9]+/, // before pipe!
-    op: /^[*/:!@%?+-]|^\.{2}/, // * / : ! @ % ? ..
+    // "+" and "-" might be added here, but then "-" won't work as silence anymore..
+    op: /^[*/:!@%?]|^\.{2}/, // * / : ! @ % ? ..
     // dollar: /^\$/,
     pipe: /^#/,
     stack: /^[,$]/,
