@@ -7,7 +7,7 @@
 import { tags as t } from '@lezer/highlight';
 import { createTheme } from './theme-helper.mjs';
 
-const hex = ['rgb(0, 0, 0)', 'rgb(113, 208, 250)', 'rgba(113, 208, 250, .4)', 'rgba(113, 208, 250, .15)'];
+const hex = ['rgb(0, 0, 0)', 'rgb(82, 208, 250)', 'rgba(113, 208, 250, .4)', 'rgba(113, 208, 250, .15)'];
 
 export const settings = {
   background: hex[0],
