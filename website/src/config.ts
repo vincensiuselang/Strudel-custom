@@ -28,7 +28,7 @@ export const KNOWN_LANGUAGES = {
 } as const;
 export const KNOWN_LANGUAGE_CODES = Object.values(KNOWN_LANGUAGES);
 
-export const GITHUB_EDIT_URL = `https://github.com/tidalcycles/strudel/tree/main/website`;
+export const GITHUB_EDIT_URL = `https://codeberg.org/uzu/strudel/src/branch/main/website`;
 
 export const COMMUNITY_INVITE_URL = `https://discord.com/invite/HGEdXmRkzT`;
 
@@ -58,7 +58,7 @@ export const SIDEBAR: Sidebar = {
       { text: 'What is Strudel?', link: 'workshop/getting-started' },
       { text: 'Showcase', link: 'intro/showcase' },
       { text: 'Blog', link: 'blog' },
-      { text: 'Community Bakery', link: 'bakery' },
+      /* { text: 'Community Bakery', link: 'bakery' }, */
     ],
     Workshop: [
       // { text: 'Getting Started', link: 'workshop/getting-started' },

@@ -1,6 +1,6 @@
 /*
 Repl.jsx - <short description TODO>
-Copyright (C) 2022 Strudel contributors - see <https://github.com/tidalcycles/strudel/blob/main/repl/src/App.js>
+Copyright (C) 2022 Strudel contributors - see <https://codeberg.org/uzu/strudel/src/branch/main/repl/src/App.js>
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
@@ -18,7 +18,7 @@ import { setVersionDefaultsFrom } from './util.mjs';
 import { StrudelMirror, defaultSettings } from '@strudel/codemirror';
 import { clearHydra } from '@strudel/hydra';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { settingsMap, useSettings } from '../settings.mjs';
+import { parseBoolean, settingsMap, useSettings } from '../settings.mjs';
 import {
   setActivePattern,
   setLatestCode,
@@ -36,11 +36,15 @@ import './Repl.css';
 import { setInterval, clearInterval } from 'worker-timers';
 import { getMetadata } from '../metadata_parser';
 
-const { latestCode, maxPolyphony, audioDeviceName } = settingsMap.get();
+const { latestCode, maxPolyphony, audioDeviceName, multiChannelOrbits } = settingsMap.get();
 let modulesLoading, presets, drawContext, clearCanvas, audioReady;
 
 if (typeof window !== 'undefined') {
-  audioReady = initAudioOnFirstClick({ maxPolyphony, audioDeviceName });
+  audioReady = initAudioOnFirstClick({
+    maxPolyphony,
+    audioDeviceName,
+    multiChannelOrbits: parseBoolean(multiChannelOrbits),
+  });
   modulesLoading = loadModules();
   presets = prebake();
   drawContext = getDrawContext();
@@ -54,6 +58,8 @@ async function getModule(name) {
   const modules = await modulesLoading;
   return modules.find((m) => m.packageName === name);
 }
+
+const initialCode = `// LOADING`;
 
 export function useReplContext() {
   const { isSyncEnabled, audioEngineTarget } = useSettings();
@@ -73,7 +79,7 @@ export function useReplContext() {
       transpiler,
       autodraw: false,
       root: containerRef.current,
-      initialCode: '// LOADING',
+      initialCode,
       pattern: silence,
       drawTime,
       drawContext,
@@ -129,9 +135,10 @@ export function useReplContext() {
         code = latestCode;
         msg = `Your last session has been loaded!`;
       } else {
-        const { code: randomTune, name } = await getRandomTune();
-        code = randomTune;
-        msg = `A random code snippet named "${name}" has been loaded!`;
+        /* const { code: randomTune, name } = await getRandomTune();
+        code = randomTune; */
+        code = '$: s("[bd <hh oh>]*2").bank("tr909").dec(.4)';
+        msg = `Default code has been loaded`;
       }
       editor.setCode(code);
       setDocumentTitle(code);
