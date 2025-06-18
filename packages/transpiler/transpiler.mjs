@@ -113,8 +113,18 @@ export function transpiler(input, options = {}) {
     leave(node, parent, prop, index) {},
   });
 
-  const { body } = ast;
-  if (!body?.[body.length - 1]?.expression) {
+  let { body } = ast;
+
+  if (!body.length) {
+    console.warn('empty body -> fallback to silence');
+    body.push({
+      type: 'ExpressionStatement',
+      expression: {
+        type: 'Identifier',
+        name: 'silence',
+      },
+    });
+  } else if (!body?.[body.length - 1]?.expression) {
     throw new Error('unexpected ast format without body expression');
   }
 
