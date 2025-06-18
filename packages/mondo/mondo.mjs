@@ -20,8 +20,8 @@ export class MondoParser {
     open_curly: /^\{/,
     close_curly: /^\}/,
     number: /^-?[0-9]*\.?[0-9]+/, // before pipe!
-    // "+" and "-" might be added here, but then "-" won't work as silence anymore..
-    op: /^[*/:!@%?]|^\.{2}/, // * / : ! @ % ? ..
+    // TODO: better error handling when "-" is used as rest, e.g "s [- bd]"
+    op: /^[*/:!@%?+-]|^\.{2}/, // * / : ! @ % ? ..
     // dollar: /^\$/,
     pipe: /^#/,
     stack: /^[,$]/,
@@ -172,6 +172,18 @@ export class MondoParser {
         // "x !* 2" => (* 2 x)
         children[opIndex] = op;
         continue;
+      }
+      // some careful error handling
+      if (left.type === 'op') {
+        throw new Error(`got 2 ops in a row: "${left.value}${op.value}"`);
+      }
+      if (right.type === 'op') {
+        let err = `got 2 ops in a row: "${op.value}${right.value}"`;
+        if (op.value === '-') {
+          // yes i know this file is not supposed to know about rests x.X
+          err += '. you probably want a rest, which is "_" in mondo!';
+        }
+        throw new Error(err);
       }
       const call = { type: 'list', children: [op, right, left] };
       // insert call while keeping other siblings

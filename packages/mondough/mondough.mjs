@@ -27,7 +27,8 @@ let nope = (...args) => args[args.length - 1];
 
 let lib = {};
 lib['nope'] = nope;
-lib['-'] = silence;
+lib['-'] = (a, b) => b.early(a);
+lib['+'] = (a, b) => b.late(a);
 lib['_'] = silence;
 lib['~'] = silence;
 lib.curly = stepcat;
