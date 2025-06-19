@@ -9,6 +9,8 @@ import sonicPink, { settings as sonicPinkSettings } from './themes/sonic-pink.mj
 import redText, { settings as redTextSettings } from './themes/red-text.mjs';
 import greenText, { settings as greenTextSettings } from './themes/green-text.mjs';
 import archBtw, { settings as archBtwSettings } from './themes/archBtw.mjs';
+import fruitDaw, { settings as fruitDawSettings } from './themes/fruitDaw.mjs';
+
 import bluescreenlight, { settings as bluescreenlightsettings } from './themes/bluescreenlight.mjs';
 
 import androidstudio, { settings as androidstudioSettings } from './themes/androidstudio.mjs';
@@ -55,6 +57,7 @@ export const themes = {
   dracula,
   duotoneDark,
   eclipse,
+  fruitDaw,
   githubDark,
   githubLight,
   greenText,
@@ -99,6 +102,7 @@ export const settings = {
   eclipse: eclipseSettings,
   CutiePi: CutiePiSettings,
   sonicPink: sonicPinkSettings,
+  fruitDaw: fruitDawSettings,
   githubLight: githubLightSettings,
   githubDark: githubDarkSettings,
   greenText: greenTextSettings,

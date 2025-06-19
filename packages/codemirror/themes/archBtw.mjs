@@ -1,8 +1,7 @@
 /*
- * Atom One
- * Atom One dark syntax theme
- *
- * https://github.com/atom/one-dark-syntax
+ * Arch Btw
+ * Modern terminal inspired theme
+ * made by Jade
  */
 import { tags as t } from '@lezer/highlight';
 import { createTheme } from './theme-helper.mjs';
@@ -30,7 +29,7 @@ export default createTheme({
       color: hex[1],
     },
     { tag: [t.atom, t.bool, t.special(t.variableName)], color: hex[1] },
-    { tag:[ t.comment, t.brace, t.bracket, ], color: hex[2] },
+    { tag: [t.comment, t.brace, t.bracket], color: hex[2] },
     { tag: [t.variableName, t.propertyName, t.labelName], color: hex[1] },
     { tag: [t.attributeName, t.number], color: hex[1] },
     { tag: t.keyword, color: hex[1] },
