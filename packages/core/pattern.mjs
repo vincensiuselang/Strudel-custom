@@ -2720,6 +2720,7 @@ export function stepcat(...timepats) {
     return nothing;
   }
   const findsteps = (x) => (Array.isArray(x) ? x : [x._steps, x]);
+  timepats = timepats.map(reify);
   timepats = timepats.map(findsteps);
   if (timepats.find((x) => x[0] === undefined)) {
     const times = timepats.map((a) => a[0]).filter((x) => x !== undefined);
