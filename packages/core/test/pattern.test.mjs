@@ -52,6 +52,7 @@ import {
   stackCentre,
   stepcat,
   sometimes,
+  expand
 } from '../index.mjs';
 
 import { steady } from '../signal.mjs';
@@ -1178,6 +1179,9 @@ describe('Pattern', () => {
     });
     it('calculates undefined steps as the average', () => {
       expect(sameFirst(stepcat(pure(1), pure(2), pure(3).setSteps(undefined)), fastcat(1, 2, 3)));
+    });
+    it('works with auto-reified values', () => {
+      expect(sameFirst(stepcat(expand(3, 'bd'), 'rim'), stepcat(expand(3, 'bd'), pure('rim'))))
     });
   });
   describe('shrink', () => {
