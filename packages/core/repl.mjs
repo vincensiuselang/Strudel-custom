@@ -86,6 +86,17 @@ export function repl({
   const pause = () => scheduler.pause();
   const toggle = () => scheduler.toggle();
   const setCps = (cps) => scheduler.setCps(cps);
+
+  /**
+   * Changes the global tempo to the given cycles per minute
+   *
+   * @name setcpm
+   * @alias setCpm
+   * @param {number} cpm cycles per minute
+   * @example
+   * setcpm(140/4) // =140 bpm in 4/4
+   * $: s("bd*4,[- sd]*2").bank('tr707')
+   */
   const setCpm = (cpm) => scheduler.setCps(cpm / 60);
 
   // TODO - not documented as jsdoc examples as the test framework doesn't simulate enough context for `each` and `all`..

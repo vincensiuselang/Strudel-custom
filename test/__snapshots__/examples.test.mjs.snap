@@ -8450,6 +8450,35 @@ exports[`runs examples > example "seqPLoop" example index 0 1`] = `
 ]
 `;
 
+exports[`runs examples > example "setcpm" example index 0 1`] = `
+[
+  "[ 0/1 → 1/4 | s:bd bank:tr707 ]",
+  "[ 1/4 → 1/2 | s:bd bank:tr707 ]",
+  "[ 1/4 → 1/2 | s:sd bank:tr707 ]",
+  "[ 1/2 → 3/4 | s:bd bank:tr707 ]",
+  "[ 3/4 → 1/1 | s:bd bank:tr707 ]",
+  "[ 3/4 → 1/1 | s:sd bank:tr707 ]",
+  "[ 1/1 → 5/4 | s:bd bank:tr707 ]",
+  "[ 5/4 → 3/2 | s:bd bank:tr707 ]",
+  "[ 5/4 → 3/2 | s:sd bank:tr707 ]",
+  "[ 3/2 → 7/4 | s:bd bank:tr707 ]",
+  "[ 7/4 → 2/1 | s:bd bank:tr707 ]",
+  "[ 7/4 → 2/1 | s:sd bank:tr707 ]",
+  "[ 2/1 → 9/4 | s:bd bank:tr707 ]",
+  "[ 9/4 → 5/2 | s:bd bank:tr707 ]",
+  "[ 9/4 → 5/2 | s:sd bank:tr707 ]",
+  "[ 5/2 → 11/4 | s:bd bank:tr707 ]",
+  "[ 11/4 → 3/1 | s:bd bank:tr707 ]",
+  "[ 11/4 → 3/1 | s:sd bank:tr707 ]",
+  "[ 3/1 → 13/4 | s:bd bank:tr707 ]",
+  "[ 13/4 → 7/2 | s:bd bank:tr707 ]",
+  "[ 13/4 → 7/2 | s:sd bank:tr707 ]",
+  "[ 7/2 → 15/4 | s:bd bank:tr707 ]",
+  "[ 15/4 → 4/1 | s:bd bank:tr707 ]",
+  "[ 15/4 → 4/1 | s:sd bank:tr707 ]",
+]
+`;
+
 exports[`runs examples > example "shape" example index 0 1`] = `
 [
   "[ 0/1 → 1/8 | s:hh shape:0 ]",
