@@ -1981,6 +1981,7 @@ export const apply = register('apply', function (func, pat) {
 
 /**
  * Plays the pattern at the given cycles per minute.
+ * @deprecated
  * @example
  * s("<bd sd>,hh*2").cpm(90) // = 90 bpm
  */
