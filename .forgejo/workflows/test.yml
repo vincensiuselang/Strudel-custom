@@ -11,6 +11,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: apt install ztd
+        run: apt update && apt install -y zstd
       - uses: pnpm/action-setup@v4
         with:
           version: 9.12.2
