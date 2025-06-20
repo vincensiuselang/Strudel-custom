@@ -20,7 +20,7 @@ export function WelcomeTab({ context }) {
       </p>
       <p>
         {/* To learn more about what this all means, check out the{' '} */}
-        To get started, check out the
+        To get started, check out the{' '}
         <a href={`${baseNoTrailing}/workshop/getting-started/`} target="_blank">
           interactive tutorial
         </a>
@@ -43,7 +43,7 @@ export function WelcomeTab({ context }) {
         </a>
         . You can find the source code at{' '}
         <a href="https://codeberg.org/uzu/strudel" target="_blank">
-          github
+          codeberg
         </a>
         . You can also find <a href="https://github.com/felixroos/dough-samples/blob/main/README.md">licensing info</a>{' '}
         for the default sound banks there. Please consider to{' '}
