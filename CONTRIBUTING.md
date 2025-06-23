@@ -17,7 +17,7 @@ git remote set-url origin git@codeberg.org:uzu/strudel.git
 
 To get in touch with the contributors, either
 
-- [join the Tidal Discord Channel](https://discord.gg/remJ6gQA) and go to the #strudel channel
+- [join the Tidal Discord Channel](https://discord.com/invite/HGEdXmRkzT) and go to the #strudel channel
 - Find related discussions on the [tidal club forum](https://club.tidalcycles.org/)
 
 ## Ask a Question
