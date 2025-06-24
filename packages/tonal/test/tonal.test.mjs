@@ -37,6 +37,13 @@ describe('tonal', () => {
         .firstCycleValues.map((h) => h.note),
     ).toEqual(['C3', 'D3', 'E3']);
   });
+  it('scale without tonic', () => {
+    expect(
+      n(0, 1, 2)
+        .scale('major')
+        .firstCycleValues.map((h) => h.note),
+    ).toEqual(['C3', 'D3', 'E3']);
+  });
   it('scale with mininotation colon', () => {
     expect(
       n(0, 1, 2)
