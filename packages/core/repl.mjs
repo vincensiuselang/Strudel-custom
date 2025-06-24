@@ -191,6 +191,7 @@ export function repl({
       await injectPatternMethods();
       setTime(() => scheduler.now()); // TODO: refactor?
       await beforeEval?.({ code });
+      allTransforms = []; // reset all transforms
       shouldHush && hush();
       let { pattern, meta } = await _evaluate(code, transpiler, transpilerOptions);
       if (Object.keys(pPatterns).length) {
