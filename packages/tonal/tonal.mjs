@@ -201,7 +201,7 @@ export const scale = register(
           const isObject = typeof value === 'object';
           let step = isObject ? value.n : value;
           if (isObject) {
-            delete value.n;
+            delete value.n; // remove n so it won't cause trouble
           }
           if (isNote(step)) {
             // legacy..
