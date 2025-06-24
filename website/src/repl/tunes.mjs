@@ -1,6 +1,6 @@
 /*
 tunes.mjs - <short description TODO>
-Copyright (C) 2022 Strudel contributors - see <https://github.com/tidalcycles/strudel/blob/main/repl/src/tunes.mjs>
+Copyright (C) 2022 Strudel contributors - see <https://codeberg.org/uzu/strudel/src/branch/main/repl/src/tunes.mjs>
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
@@ -313,26 +313,6 @@ stack(
 )
   .fast(2/3)
   .pianoroll()`;
-/* 
-export const bridgeIsOver = `// "Bridge is over"
-// @license CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/
-// @by Felix Roos, bassline by BDP - The Bridge Is Over
-
-samples({mad:'https://freesound.org/data/previews/22/22274_109943-lq.mp3'})
-stack(
-  stack(
-  note("c3*2 [[c3@1.4 bb2] ab2] gb2*2 <[[gb2@1.4 ab2] bb2] gb2>")
-    .gain(.8).clip("[.5 1]*2"),
-  n("<0 1 2 3 4 3 2 1>")
-    .clip(.5)
-    .echoWith(8, 1/32, (x,i)=>x.add(n(i)).velocity(Math.pow(.7,i)))
-    .scale('c4 whole tone')
-    .echo(3, 1/8, .5)
-  ).piano(),
-  s("mad").slow(2)
-).cpm(78).slow(4)
-  .pianoroll()
-`; */
 
 export const goodTimes = `// "Good times"
 // @license CC BY-NC-SA 4.0 https://creativecommons.org/licenses/by-nc-sa/4.0/

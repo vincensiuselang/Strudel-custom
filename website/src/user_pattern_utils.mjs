@@ -1,24 +1,19 @@
 import { atom } from 'nanostores';
-import { persistentAtom } from '@nanostores/persistent';
 import { useStore } from '@nanostores/react';
 import { logger } from '@strudel/core';
 import { nanoid } from 'nanoid';
 import { settingsMap } from './settings.mjs';
-import { parseJSON, supabase } from './repl/util.mjs';
+import { confirmDialog, parseJSON, supabase } from './repl/util.mjs';
 
 export let $publicPatterns = atom([]);
 export let $featuredPatterns = atom([]);
 
-export const collectionName = {
-  user: 'user',
-  public: 'Last Creations',
-  stock: 'Stock Examples',
-  featured: 'Featured',
-};
-
+const patternQueryLimit = 20;
 export const patternFilterName = {
-  community: 'community',
+  public: 'latest',
+  featured: 'featured',
   user: 'user',
+  // stock: 'stock examples',
 };
 
 const sessionAtom = (name, initial = undefined) => {
@@ -37,7 +32,7 @@ const sessionAtom = (name, initial = undefined) => {
 export let $viewingPatternData = sessionAtom('viewingPatternData', {
   id: '',
   code: '',
-  collection: collectionName.user,
+  collection: patternFilterName.user,
   created_at: Date.now(),
 });
 
@@ -52,31 +47,56 @@ export const setViewingPatternData = (data) => {
   $viewingPatternData.set(JSON.stringify(data));
 };
 
-export function loadPublicPatterns() {
-  return supabase.from('code_v1').select().eq('public', true).limit(20).order('id', { ascending: false });
+function parsePageNum(page) {
+  return isNaN(page) ? 0 : page;
+}
+export function loadPublicPatterns(page) {
+  page = parsePageNum(page);
+  const offset = page * patternQueryLimit;
+  return supabase
+    .from('code_v1')
+    .select()
+    .eq('public', true)
+    .range(offset, offset + patternQueryLimit)
+    .order('id', { ascending: false });
 }
 
-export function loadFeaturedPatterns() {
-  return supabase.from('code_v1').select().eq('featured', true).limit(20).order('id', { ascending: false });
+export function loadFeaturedPatterns(page = 0) {
+  page = parsePageNum(page);
+  const offset = page * patternQueryLimit;
+  return supabase
+    .from('code_v1')
+    .select()
+    .eq('featured', true)
+    .range(offset, offset + patternQueryLimit)
+    .order('id', { ascending: false });
+}
+
+export async function loadAndSetPublicPatterns(page) {
+  const p = await loadPublicPatterns(page);
+  const data = p?.data;
+  const pats = {};
+  data?.forEach((data, key) => (pats[data.id ?? key] = data));
+  $publicPatterns.set(pats);
+}
+export async function loadAndSetFeaturedPatterns(page) {
+  const p = await loadFeaturedPatterns(page);
+  const data = p?.data;
+  const pats = {};
+  data?.forEach((data, key) => (pats[data.id ?? key] = data));
+  $featuredPatterns.set(pats);
 }
 
 export async function loadDBPatterns() {
   try {
-    const { data: publicPatterns } = await loadPublicPatterns();
-    const { data: featuredPatterns } = await loadFeaturedPatterns();
-    const featured = {};
-    const pub = {};
-
-    publicPatterns?.forEach((data, key) => (pub[data.id ?? key] = data));
-    featuredPatterns?.forEach((data, key) => (featured[data.id ?? key] = data));
-    $publicPatterns.set(pub);
-    $featuredPatterns.set(featured);
+    await loadAndSetPublicPatterns();
+    await loadAndSetFeaturedPatterns();
   } catch (err) {
     console.error('error loading patterns', err);
   }
 }
 
-// reason: https://github.com/tidalcycles/strudel/issues/857
+// reason: https://codeberg.org/uzu/strudel/issues/857
 const $activePattern = sessionAtom('activePattern', '');
 
 export function setActivePattern(key) {
@@ -91,9 +111,9 @@ export function useActivePattern() {
 
 export const setLatestCode = (code) => settingsMap.setKey('latestCode', code);
 
-const defaultCode = '';
+export const defaultCode = '';
 export const userPattern = {
-  collection: collectionName.user,
+  collection: patternFilterName.user,
   getAll() {
     const patterns = parseJSON(settingsMap.get().userPatterns);
     return patterns ?? {};
@@ -131,17 +151,19 @@ export const userPattern = {
     return this.update(newPattern.id, { ...newPattern.data, code: data.code });
   },
   clearAll() {
-    if (!confirm(`This will delete all your patterns. Are you really sure?`)) {
-      return;
-    }
-    const viewingPatternData = getViewingPatternData();
-    setUserPatterns({});
+    confirmDialog(`This will delete all your patterns. Are you really sure?`).then((r) => {
+      if (r == false) {
+        return;
+      }
+      const viewingPatternData = getViewingPatternData();
+      setUserPatterns({});
 
-    if (viewingPatternData.collection !== this.collection) {
-      return { id: viewingPatternData.id, data: viewingPatternData };
-    }
-    setActivePattern(null);
-    return this.create();
+      if (viewingPatternData.collection !== this.collection) {
+        return { id: viewingPatternData.id, data: viewingPatternData };
+      }
+      setActivePattern(null);
+      return this.create();
+    });
   },
   delete(id) {
     const userPatterns = this.getAll();
