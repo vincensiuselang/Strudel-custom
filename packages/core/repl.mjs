@@ -113,8 +113,9 @@ export function repl({
    * all(x => x.pianoroll())
    * ```
    */
+  let allTransforms = [];
   const all = function (transform) {
-    allTransform = transform;
+    allTransforms.push(transform);
     return silence;
   };
   /** Applies a function to each of the running patterns separately. This is intended for future use with upcoming 'stepwise' features. See `all` for a version that applies the function to all the patterns stacked together into a single pattern.
@@ -190,6 +191,7 @@ export function repl({
       await injectPatternMethods();
       setTime(() => scheduler.now()); // TODO: refactor?
       await beforeEval?.({ code });
+      allTransforms = []; // reset all transforms
       shouldHush && hush();
       let { pattern, meta } = await _evaluate(code, transpiler, transpilerOptions);
       if (Object.keys(pPatterns).length) {
@@ -202,8 +204,10 @@ export function repl({
       } else if (eachTransform) {
         pattern = eachTransform(pattern);
       }
-      if (allTransform) {
-        pattern = allTransform(pattern);
+      if (allTransforms.length) {
+        for (let i in allTransforms) {
+          pattern = allTransforms[i](pattern);
+        }
       }
       if (!isPattern(pattern)) {
         const message = `got "${typeof evaluated}" instead of pattern`;
