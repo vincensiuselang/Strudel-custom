@@ -39,7 +39,7 @@ describe('tonal', () => {
   });
   it('scale without tonic', () => {
     expect(
-      n(0, 1, 2)
+      n(seq(0, 1, 2))
         .scale('major')
         .firstCycleValues.map((h) => h.note),
     ).toEqual(['C3', 'D3', 'E3']);
