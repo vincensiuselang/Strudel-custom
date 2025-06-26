@@ -21,6 +21,7 @@ export function repl({
   setInterval,
   clearInterval,
   id,
+  mondo = false,
 }) {
   const state = {
     schedulerError: undefined,
@@ -193,6 +194,10 @@ export function repl({
       await beforeEval?.({ code });
       allTransforms = []; // reset all transforms
       shouldHush && hush();
+
+      if (mondo) {
+        code = `mondolang\`${code}\``;
+      }
       let { pattern, meta } = await _evaluate(code, transpiler, transpilerOptions);
       if (Object.keys(pPatterns).length) {
         let patterns = Object.values(pPatterns);

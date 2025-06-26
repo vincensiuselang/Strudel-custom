@@ -107,6 +107,10 @@ export async function aliasBank(...args) {
 }
 
 export function getSound(s) {
+  if (typeof s !== 'string') {
+    console.warn(`getSound: expected string got "${s}". fall back to triangle`);
+    return soundMap.get().triangle; // is this good?
+  }
   return soundMap.get()[s.toLowerCase()];
 }
 
@@ -571,6 +575,9 @@ export const superdough = async (value, t, hapDuration, cps) => {
 
   let audioNodes = [];
 
+  if (['-', '~', '_'].includes(s)) {
+    return;
+  }
   if (bank && s) {
     s = `${bank}_${s}`;
     value.s = s;
