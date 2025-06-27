@@ -548,7 +548,7 @@ export const superdough = async (value, t, hapDuration, cps = 0.5) => {
     compressorRelease,
   } = value;
 
-  delaytime = delaytime ?? cycleToSeconds(delaysync)
+  delaytime = delaytime ?? cycleToSeconds(delaysync, cps);
 
   const orbitChannels = mapChannelNumbers(
     multiChannelOrbits && orbit > 0 ? [orbit * 2 - 1, orbit * 2] : getDefaultValue('channels'),

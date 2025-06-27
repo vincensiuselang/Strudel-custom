@@ -21,7 +21,6 @@ export const webaudioOutput = (hap, deadline, hapDuration, cps, t) => {
   return superdough(hap2value(hap), t ? `=${t}` : deadline, hapDuration, cps);
 };
 
-
 Pattern.prototype.webaudio = function () {
   return this.onTrigger(webaudioOutputTrigger);
 };

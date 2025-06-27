@@ -985,15 +985,31 @@ export const { delayfeedback, delayfb, dfb } = registerControl('delayfeedback', 
  *
  */
 export const { delaytime, delayt, dt } = registerControl('delaytime', 'delayt', 'dt');
-/* // TODO: test
+
+/**
+ * Sets the time of the delay effect in cycles.
+ *
+ * @name delaysync
+ * @param {number | Pattern} cycles delay length in cycles
+ * @synonyms delayt, dt
+ * @example
+ * s("bd bd").delay(.25).delaysync("<1 2 3 5>".div(8))
+ *
+ */
+export const { delaysync } = registerControl('delaysync');
+
+/**
  * Specifies whether delaytime is calculated relative to cps.
  *
  * @name lock
  * @param {number | Pattern} enable When set to 1, delaytime is a direct multiple of a cycle.
+ * @superdirtOnly
  * @example
  * s("sd").delay().lock(1).osc()
  *
+ *
  */
+
 export const { lock } = registerControl('lock');
 /**
  * Set detune for stacked voices of supported oscillators
