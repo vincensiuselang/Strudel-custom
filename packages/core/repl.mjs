@@ -21,6 +21,7 @@ export function repl({
   setInterval,
   clearInterval,
   id,
+  mondo = false,
 }) {
   const state = {
     schedulerError: undefined,
@@ -85,6 +86,17 @@ export function repl({
   const pause = () => scheduler.pause();
   const toggle = () => scheduler.toggle();
   const setCps = (cps) => scheduler.setCps(cps);
+
+  /**
+   * Changes the global tempo to the given cycles per minute
+   *
+   * @name setcpm
+   * @alias setCpm
+   * @param {number} cpm cycles per minute
+   * @example
+   * setcpm(140/4) // =140 bpm in 4/4
+   * $: s("bd*4,[- sd]*2").bank('tr707')
+   */
   const setCpm = (cpm) => scheduler.setCps(cpm / 60);
 
   // TODO - not documented as jsdoc examples as the test framework doesn't simulate enough context for `each` and `all`..
@@ -102,8 +114,9 @@ export function repl({
    * all(x => x.pianoroll())
    * ```
    */
+  let allTransforms = [];
   const all = function (transform) {
-    allTransform = transform;
+    allTransforms.push(transform);
     return silence;
   };
   /** Applies a function to each of the running patterns separately. This is intended for future use with upcoming 'stepwise' features. See `all` for a version that applies the function to all the patterns stacked together into a single pattern.
@@ -179,7 +192,12 @@ export function repl({
       await injectPatternMethods();
       setTime(() => scheduler.now()); // TODO: refactor?
       await beforeEval?.({ code });
+      allTransforms = []; // reset all transforms
       shouldHush && hush();
+
+      if (mondo) {
+        code = `mondolang\`${code}\``;
+      }
       let { pattern, meta } = await _evaluate(code, transpiler, transpilerOptions);
       if (Object.keys(pPatterns).length) {
         let patterns = Object.values(pPatterns);
@@ -191,8 +209,10 @@ export function repl({
       } else if (eachTransform) {
         pattern = eachTransform(pattern);
       }
-      if (allTransform) {
-        pattern = allTransform(pattern);
+      if (allTransforms.length) {
+        for (let i in allTransforms) {
+          pattern = allTransforms[i](pattern);
+        }
       }
       if (!isPattern(pattern)) {
         const message = `got "${typeof evaluated}" instead of pattern`;
@@ -225,7 +245,7 @@ export function repl({
 export const getTrigger =
   ({ getTime, defaultOutput }) =>
   async (hap, deadline, duration, cps, t) => {
-    // TODO: get rid of deadline after https://github.com/tidalcycles/strudel/pull/1004
+    // TODO: get rid of deadline after https://codeberg.org/uzu/strudel/pulls/1004
     try {
       if (!hap.context.onTrigger || !hap.context.dominantTrigger) {
         await defaultOutput(hap, deadline, duration, cps, t);

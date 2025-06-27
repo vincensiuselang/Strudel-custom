@@ -62,7 +62,7 @@ To see which sample names are available, open the `sounds` tab in the [REPL](htt
 Note that only the sample maps (mapping names to URLs) are loaded initially, while the audio samples themselves are not loaded until they are actually played.
 This behaviour of loading things only when they are needed is also called `lazy loading`.
 While it saves resources, it can also lead to sounds not being audible the first time they are triggered, because the sound is still loading.
-[This might be fixed in the future](https://github.com/tidalcycles/strudel/issues/187)
+[This might be fixed in the future](https://codeberg.org/uzu/strudel/issues/187)
 
 # Sound Banks
 
@@ -247,15 +247,17 @@ We can also declare different samples for different regions of the keyboard:
 
 <MiniRepl
   client:idle
-  tune={`samples({
+  tune={`setcpm(60)
+samples({
   'moog': {
     'g2': 'moog/004_Mighty%20Moog%20G2.wav',
     'g3': 'moog/005_Mighty%20Moog%20G3.wav',
     'g4': 'moog/006_Mighty%20Moog%20G4.wav',
-  }}, 'github:tidalcycles/dirt-samples');
+  }}, 'github:tidalcycles/dirt-samples')
+
 note("g2!2 <bb2 c3>!2, <c4@3 [<eb4 bb3> g4 f4]>")
-  .s('moog').clip(1)
-  .gain(.5).cpm(60)`}
+.s('moog').clip(1)
+.gain(.5)`}
 />
 
 The sampler will always pick the closest matching sample for the current note!

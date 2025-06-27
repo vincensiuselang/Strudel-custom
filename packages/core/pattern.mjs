@@ -1,6 +1,6 @@
 /*
 pattern.mjs - Core pattern representation for strudel
-Copyright (C) 2025 Strudel contributors - see <https://github.com/tidalcycles/strudel/blob/main/packages/core/pattern.mjs>
+Copyright (C) 2025 Strudel contributors - see <https://codeberg.org/uzu/strudel/src/branch/main/packages/core/pattern.mjs>
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
@@ -904,12 +904,13 @@ Pattern.prototype.collect = function () {
  * note("<[c,eb,g]!2 [c,f,ab] [d,f,ab]>")
  * .arpWith(haps => haps[2])
  * */
-Pattern.prototype.arpWith = function (func) {
-  return this.collect()
+export const arpWith = register('arpWith', (func, pat) => {
+  return pat
+    .collect()
     .fmap((v) => reify(func(v)))
     .innerJoin()
     .withHap((h) => new Hap(h.whole, h.part, h.value.value, h.combineContext(h.value)));
-};
+});
 
 /**
  * Selects indices in in stacked notes.
@@ -917,9 +918,11 @@ Pattern.prototype.arpWith = function (func) {
  * note("<[c,eb,g]!2 [c,f,ab] [d,f,ab]>")
  * .arp("0 [0,2] 1 [0,2]")
  * */
-Pattern.prototype.arp = function (pat) {
-  return this.arpWith((haps) => pat.fmap((i) => haps[i % haps.length]));
-};
+export const arp = register(
+  'arp',
+  (indices, pat) => pat.arpWith((haps) => reify(indices).fmap((i) => haps[i % haps.length])),
+  false,
+);
 
 /*
  * Takes a time duration followed by one or more patterns, and shifts the given patterns in time, so they are
@@ -1981,6 +1984,7 @@ export const apply = register('apply', function (func, pat) {
 
 /**
  * Plays the pattern at the given cycles per minute.
+ * @deprecated
  * @example
  * s("<bd sd>,hh*2").cpm(90) // = 90 bpm
  */
@@ -2441,9 +2445,14 @@ const _chunk = function (n, func, pat, back = false, fast = false) {
   return pat.when(binary_pat, func);
 };
 
-export const { chunk, slowchunk, slowChunk } = register(['chunk', 'slowchunk', 'slowChunk'], function (n, func, pat) {
-  return _chunk(n, func, pat, false, false);
-});
+export const { chunk, slowchunk, slowChunk } = register(
+  ['chunk', 'slowchunk', 'slowChunk'],
+  function (n, func, pat) {
+    return _chunk(n, func, pat, false, false);
+  },
+  true,
+  true,
+);
 
 /**
  * Like `chunk`, but cycles through the parts in reverse order. Known as chunk' in tidalcycles
@@ -2455,9 +2464,14 @@ export const { chunk, slowchunk, slowChunk } = register(['chunk', 'slowchunk', '
  * "0 1 2 3".chunkBack(4, x=>x.add(7))
  * .scale("A:minor").note()
  */
-export const { chunkBack, chunkback } = register(['chunkBack', 'chunkback'], function (n, func, pat) {
-  return _chunk(n, func, pat, true);
-});
+export const { chunkBack, chunkback } = register(
+  ['chunkBack', 'chunkback'],
+  function (n, func, pat) {
+    return _chunk(n, func, pat, true);
+  },
+  true,
+  true,
+);
 
 /**
  * Like `chunk`, but the cycles of the source pattern aren't repeated
@@ -2471,9 +2485,14 @@ export const { chunkBack, chunkback } = register(['chunkBack', 'chunkback'], fun
  * .fastChunk(4, x => x.color('red')).slow(2)
  * .scale("C2:major").note()
  */
-export const { fastchunk, fastChunk } = register(['fastchunk', 'fastChunk'], function (n, func, pat) {
-  return _chunk(n, func, pat, false, true);
-});
+export const { fastchunk, fastChunk } = register(
+  ['fastchunk', 'fastChunk'],
+  function (n, func, pat) {
+    return _chunk(n, func, pat, false, true);
+  },
+  true,
+  true,
+);
 
 // TODO - redefine elsewhere in terms of mask
 export const bypass = register(
@@ -2704,7 +2723,7 @@ export function stepcat(...timepats) {
   if (timepats.length === 0) {
     return nothing;
   }
-  const findsteps = (x) => (Array.isArray(x) ? x : [x._steps, x]);
+  const findsteps = (x) => (Array.isArray(x) ? x : [x._steps ?? 1, x]);
   timepats = timepats.map(findsteps);
   if (timepats.find((x) => x[0] === undefined)) {
     const times = timepats.map((a) => a[0]).filter((x) => x !== undefined);
@@ -3176,6 +3195,25 @@ export const slice = register(
   },
   false, // turns off auto-patternification
 );
+
+/**
+ *
+ * make something happen on event time
+ * uses browser timeout which is innacurate for audio tasks
+ * @name onTriggerTime
+ * @memberof Pattern
+ *  @returns Pattern
+ * @example
+ * s("bd!8").onTriggerTime((hap) => {console.info(hap)})
+ */
+Pattern.prototype.onTriggerTime = function (func) {
+  return this.onTrigger((t_deprecate, hap, currentTime, cps = 1, targetTime) => {
+    const diff = targetTime - currentTime;
+    window.setTimeout(() => {
+      func(hap);
+    }, diff * 1000);
+  }, false);
+};
 
 /**
  * Works the same as slice, but changes the playback speed of each slice to match the duration of its step.
