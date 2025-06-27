@@ -1842,9 +1842,9 @@ export const { fastGap, fastgap } = register(['fastGap', 'fastgap'], function (f
     const newWhole = !hap.whole
       ? undefined
       : new TimeSpan(
-        newPart.begin.sub(begin.sub(hap.whole.begin).div(factor)),
-        newPart.end.add(hap.whole.end.sub(end).div(factor)),
-      );
+          newPart.begin.sub(begin.sub(hap.whole.begin).div(factor)),
+          newPart.end.add(hap.whole.end.sub(end).div(factor)),
+        );
     return new Hap(newWhole, newPart, hap.value, hap.context);
   };
   return pat.withQuerySpanMaybe(qf).withHap(ef).splitQueries();
@@ -2528,10 +2528,9 @@ export const { fastchunk, fastChunk } = register(
  * sound("bd sd ht lt bd - cp lt").chunkInto(4, hurry(2))
  *   .bank("tr909")
  */
-export const { chunkinto, chunkInto } = register(['chunkinto', 'chunkInto'],
-  function (n, func, pat) {
-    return pat.into(fastcat(true, ...Array(n - 1).fill(false))._iterback(n), func);
-  });
+export const { chunkinto, chunkInto } = register(['chunkinto', 'chunkInto'], function (n, func, pat) {
+  return pat.into(fastcat(true, ...Array(n - 1).fill(false))._iterback(n), func);
+});
 
 /**
  * Like `chunkInto`, but moves backwards through the chunks.
@@ -2542,10 +2541,14 @@ export const { chunkinto, chunkInto } = register(['chunkinto', 'chunkInto'],
  * sound("bd sd ht lt bd - cp lt").chunkInto(4, hurry(2))
  *   .bank("tr909")
  */
-export const { chunkbackinto, chunkBackInto } = register(['chunkbackinto', 'chunkBackInto'],
-  function (n, func, pat) {
-    return pat.into(fastcat(true, ...Array(n - 1).fill(false))._iter(n)._early(1), func);
-  });
+export const { chunkbackinto, chunkBackInto } = register(['chunkbackinto', 'chunkBackInto'], function (n, func, pat) {
+  return pat.into(
+    fastcat(true, ...Array(n - 1).fill(false))
+      ._iter(n)
+      ._early(1),
+    func,
+  );
+});
 
 // TODO - redefine elsewhere in terms of mask
 export const bypass = register(
