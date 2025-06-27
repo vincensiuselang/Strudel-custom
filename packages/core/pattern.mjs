@@ -2530,7 +2530,21 @@ export const { fastchunk, fastChunk } = register(
  */
 export const { chunkinto, chunkInto } = register(['chunkinto', 'chunkInto'],
   function (n, func, pat) {
-    return pat.into(fastcat(true, ...Array(n - 1).fill(false)).iterback(n), func);
+    return pat.into(fastcat(true, ...Array(n - 1).fill(false))._iterback(n), func);
+  });
+
+/**
+ * Like `chunkInto`, but moves backwards through the chunks.
+ * @name chunkBackInto
+ * @synonym chunkbackinto
+ * @memberof Pattern
+ * @example
+ * sound("bd sd ht lt bd - cp lt").chunkInto(4, hurry(2))
+ *   .bank("tr909")
+ */
+export const { chunkbackinto, chunkBackInto } = register(['chunkbackinto', 'chunkBackInto'],
+  function (n, func, pat) {
+    return pat.into(fastcat(true, ...Array(n - 1).fill(false))._iter(n)._early(1), func);
   });
 
 // TODO - redefine elsewhere in terms of mask
