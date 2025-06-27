@@ -1889,6 +1889,86 @@ exports[`runs examples > example "chunkBack" example index 0 1`] = `
 ]
 `;
 
+exports[`runs examples > example "chunkBackInto" example index 0 1`] = `
+[
+  "[ 0/1 → 1/16 | s:bd speed:2 bank:tr909 ]",
+  "[ 1/16 → 1/8 | s:sd speed:2 bank:tr909 ]",
+  "[ 1/8 → 3/16 | s:bd speed:2 bank:tr909 ]",
+  "[ 3/16 → 1/4 | s:sd speed:2 bank:tr909 ]",
+  "[ 1/4 → 3/8 | s:ht bank:tr909 ]",
+  "[ 3/8 → 1/2 | s:lt bank:tr909 ]",
+  "[ 1/2 → 5/8 | s:bd bank:tr909 ]",
+  "[ 3/4 → 7/8 | s:cp bank:tr909 ]",
+  "[ 7/8 → 1/1 | s:lt bank:tr909 ]",
+  "[ 1/1 → 9/8 | s:bd bank:tr909 ]",
+  "[ 9/8 → 5/4 | s:sd bank:tr909 ]",
+  "[ 5/4 → 21/16 | s:ht speed:2 bank:tr909 ]",
+  "[ 21/16 → 11/8 | s:lt speed:2 bank:tr909 ]",
+  "[ 11/8 → 23/16 | s:ht speed:2 bank:tr909 ]",
+  "[ 23/16 → 3/2 | s:lt speed:2 bank:tr909 ]",
+  "[ 3/2 → 13/8 | s:bd bank:tr909 ]",
+  "[ 7/4 → 15/8 | s:cp bank:tr909 ]",
+  "[ 15/8 → 2/1 | s:lt bank:tr909 ]",
+  "[ 2/1 → 17/8 | s:bd bank:tr909 ]",
+  "[ 17/8 → 9/4 | s:sd bank:tr909 ]",
+  "[ 9/4 → 19/8 | s:ht bank:tr909 ]",
+  "[ 19/8 → 5/2 | s:lt bank:tr909 ]",
+  "[ 5/2 → 41/16 | s:bd speed:2 bank:tr909 ]",
+  "[ 21/8 → 43/16 | s:bd speed:2 bank:tr909 ]",
+  "[ 11/4 → 23/8 | s:cp bank:tr909 ]",
+  "[ 23/8 → 3/1 | s:lt bank:tr909 ]",
+  "[ 3/1 → 25/8 | s:bd bank:tr909 ]",
+  "[ 25/8 → 13/4 | s:sd bank:tr909 ]",
+  "[ 13/4 → 27/8 | s:ht bank:tr909 ]",
+  "[ 27/8 → 7/2 | s:lt bank:tr909 ]",
+  "[ 7/2 → 29/8 | s:bd bank:tr909 ]",
+  "[ 15/4 → 61/16 | s:cp speed:2 bank:tr909 ]",
+  "[ 61/16 → 31/8 | s:lt speed:2 bank:tr909 ]",
+  "[ 31/8 → 63/16 | s:cp speed:2 bank:tr909 ]",
+  "[ 63/16 → 4/1 | s:lt speed:2 bank:tr909 ]",
+]
+`;
+
+exports[`runs examples > example "chunkInto" example index 0 1`] = `
+[
+  "[ 0/1 → 1/16 | s:bd speed:2 bank:tr909 ]",
+  "[ 1/16 → 1/8 | s:sd speed:2 bank:tr909 ]",
+  "[ 1/8 → 3/16 | s:bd speed:2 bank:tr909 ]",
+  "[ 3/16 → 1/4 | s:sd speed:2 bank:tr909 ]",
+  "[ 1/4 → 3/8 | s:ht bank:tr909 ]",
+  "[ 3/8 → 1/2 | s:lt bank:tr909 ]",
+  "[ 1/2 → 5/8 | s:bd bank:tr909 ]",
+  "[ 3/4 → 7/8 | s:cp bank:tr909 ]",
+  "[ 7/8 → 1/1 | s:lt bank:tr909 ]",
+  "[ 1/1 → 9/8 | s:bd bank:tr909 ]",
+  "[ 9/8 → 5/4 | s:sd bank:tr909 ]",
+  "[ 5/4 → 21/16 | s:ht speed:2 bank:tr909 ]",
+  "[ 21/16 → 11/8 | s:lt speed:2 bank:tr909 ]",
+  "[ 11/8 → 23/16 | s:ht speed:2 bank:tr909 ]",
+  "[ 23/16 → 3/2 | s:lt speed:2 bank:tr909 ]",
+  "[ 3/2 → 13/8 | s:bd bank:tr909 ]",
+  "[ 7/4 → 15/8 | s:cp bank:tr909 ]",
+  "[ 15/8 → 2/1 | s:lt bank:tr909 ]",
+  "[ 2/1 → 17/8 | s:bd bank:tr909 ]",
+  "[ 17/8 → 9/4 | s:sd bank:tr909 ]",
+  "[ 9/4 → 19/8 | s:ht bank:tr909 ]",
+  "[ 19/8 → 5/2 | s:lt bank:tr909 ]",
+  "[ 5/2 → 41/16 | s:bd speed:2 bank:tr909 ]",
+  "[ 21/8 → 43/16 | s:bd speed:2 bank:tr909 ]",
+  "[ 11/4 → 23/8 | s:cp bank:tr909 ]",
+  "[ 23/8 → 3/1 | s:lt bank:tr909 ]",
+  "[ 3/1 → 25/8 | s:bd bank:tr909 ]",
+  "[ 25/8 → 13/4 | s:sd bank:tr909 ]",
+  "[ 13/4 → 27/8 | s:ht bank:tr909 ]",
+  "[ 27/8 → 7/2 | s:lt bank:tr909 ]",
+  "[ 7/2 → 29/8 | s:bd bank:tr909 ]",
+  "[ 15/4 → 61/16 | s:cp speed:2 bank:tr909 ]",
+  "[ 61/16 → 31/8 | s:lt speed:2 bank:tr909 ]",
+  "[ 31/8 → 63/16 | s:cp speed:2 bank:tr909 ]",
+  "[ 63/16 → 4/1 | s:lt speed:2 bank:tr909 ]",
+]
+`;
+
 exports[`runs examples > example "clip" example index 0 1`] = `
 [
   "[ 0/1 → 1/4 | note:c s:piano clip:0.5 ]",
@@ -4388,6 +4468,35 @@ exports[`runs examples > example "inside" example index 0 1`] = `
   "[ 29/8 → 15/4 | note:G3 ]",
   "[ 15/4 → 31/8 | note:D3 ]",
   "[ 31/8 → 4/1 | note:E3 ]",
+]
+`;
+
+exports[`runs examples > example "into" example index 0 1`] = `
+[
+  "[ 0/1 → 1/8 | s:bd speed:2 ]",
+  "[ 1/8 → 1/4 | s:sd speed:2 ]",
+  "[ 1/4 → 3/8 | s:bd speed:2 ]",
+  "[ 3/8 → 1/2 | s:sd speed:2 ]",
+  "[ 1/2 → 3/4 | s:ht ]",
+  "[ 3/4 → 1/1 | s:lt ]",
+  "[ 1/1 → 9/8 | s:bd speed:2 ]",
+  "[ 9/8 → 5/4 | s:sd speed:2 ]",
+  "[ 5/4 → 11/8 | s:bd speed:2 ]",
+  "[ 11/8 → 3/2 | s:sd speed:2 ]",
+  "[ 3/2 → 7/4 | s:ht ]",
+  "[ 7/4 → 2/1 | s:lt ]",
+  "[ 2/1 → 17/8 | s:bd speed:2 ]",
+  "[ 17/8 → 9/4 | s:sd speed:2 ]",
+  "[ 9/4 → 19/8 | s:bd speed:2 ]",
+  "[ 19/8 → 5/2 | s:sd speed:2 ]",
+  "[ 5/2 → 11/4 | s:ht ]",
+  "[ 11/4 → 3/1 | s:lt ]",
+  "[ 3/1 → 25/8 | s:bd speed:2 ]",
+  "[ 25/8 → 13/4 | s:sd speed:2 ]",
+  "[ 13/4 → 27/8 | s:bd speed:2 ]",
+  "[ 27/8 → 7/2 | s:sd speed:2 ]",
+  "[ 7/2 → 15/4 | s:ht ]",
+  "[ 15/4 → 4/1 | s:lt ]",
 ]
 `;
 

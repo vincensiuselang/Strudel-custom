@@ -869,6 +869,31 @@ export class Pattern {
     console.log(drawLine(this));
     return this;
   }
+
+  //////////////////////////////////////////////////////////////////////
+  // methods relating to breaking patterns into subcycles
+
+  // Breaks a pattern into a pattern of patterns, according to the structure of the given binary pattern.
+  unjoin(pieces, func = id) {
+    return pieces.withHap((hap) =>
+      hap.withValue((v) => (v ? func(this.ribbon(hap.whole.begin, hap.whole.duration)) : this)),
+    );
+  }
+
+  /**
+   * Breaks a pattern into pieces according to the structure of a given pattern.
+   * True values in the given pattern cause the corresponding subcycle of the
+   * source pattern to be looped, and for an (optional) given function to be
+   * applied. False values result in the corresponding part of the source pattern
+   * to be played unchanged.
+   * @name into
+   * @memberof Pattern
+   * @example
+   * sound("bd sd ht lt").into("1 0", hurry(2))
+   */
+  into(pieces, func) {
+    return this.unjoin(pieces, func).innerJoin();
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2493,6 +2518,37 @@ export const { fastchunk, fastChunk } = register(
   true,
   true,
 );
+
+/**
+ * Like `chunk`, but the function is applied to a looped subcycle of the source pattern.
+ * @name chunkInto
+ * @synonym chunkinto
+ * @memberof Pattern
+ * @example
+ * sound("bd sd ht lt bd - cp lt").chunkInto(4, hurry(2))
+ *   .bank("tr909")
+ */
+export const { chunkinto, chunkInto } = register(['chunkinto', 'chunkInto'], function (n, func, pat) {
+  return pat.into(fastcat(true, ...Array(n - 1).fill(false))._iterback(n), func);
+});
+
+/**
+ * Like `chunkInto`, but moves backwards through the chunks.
+ * @name chunkBackInto
+ * @synonym chunkbackinto
+ * @memberof Pattern
+ * @example
+ * sound("bd sd ht lt bd - cp lt").chunkInto(4, hurry(2))
+ *   .bank("tr909")
+ */
+export const { chunkbackinto, chunkBackInto } = register(['chunkbackinto', 'chunkBackInto'], function (n, func, pat) {
+  return pat.into(
+    fastcat(true, ...Array(n - 1).fill(false))
+      ._iter(n)
+      ._early(1),
+    func,
+  );
+});
 
 // TODO - redefine elsewhere in terms of mask
 export const bypass = register(
