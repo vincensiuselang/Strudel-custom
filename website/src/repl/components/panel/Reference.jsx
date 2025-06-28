@@ -21,8 +21,11 @@ export function Reference() {
         return true;
       }
 
-	  const lowCaseSearch = search.toLowerCase();
-      return entry.name.toLowerCase().includes(lowCaseSearch) || (entry.synonyms?.some((s) => s.includes(lowCaseSearch)) ?? false);
+      const lowCaseSearch = search.toLowerCase();
+      return (
+        entry.name.toLowerCase().includes(lowCaseSearch) ||
+        (entry.synonyms?.some((s) => s.includes(lowCaseSearch)) ?? false)
+      );
     });
   }, [search]);
 

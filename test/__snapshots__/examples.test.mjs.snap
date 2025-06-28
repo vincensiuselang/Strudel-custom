@@ -2585,6 +2585,19 @@ exports[`runs examples > example "delayfeedback" example index 0 1`] = `
 ]
 `;
 
+exports[`runs examples > example "delaysync" example index 0 1`] = `
+[
+  "[ 0/1 → 1/2 | s:bd delay:0.25 delaysync:0.125 ]",
+  "[ 1/2 → 1/1 | s:bd delay:0.25 delaysync:0.125 ]",
+  "[ 1/1 → 3/2 | s:bd delay:0.25 delaysync:0.25 ]",
+  "[ 3/2 → 2/1 | s:bd delay:0.25 delaysync:0.25 ]",
+  "[ 2/1 → 5/2 | s:bd delay:0.25 delaysync:0.375 ]",
+  "[ 5/2 → 3/1 | s:bd delay:0.25 delaysync:0.375 ]",
+  "[ 3/1 → 7/2 | s:bd delay:0.25 delaysync:0.625 ]",
+  "[ 7/2 → 4/1 | s:bd delay:0.25 delaysync:0.625 ]",
+]
+`;
+
 exports[`runs examples > example "delaytime" example index 0 1`] = `
 [
   "[ 0/1 → 1/2 | s:bd delay:0.25 delaytime:0.125 ]",
@@ -5122,6 +5135,15 @@ exports[`runs examples > example "linger" example index 0 1`] = `
   "[ (15/4 → 31/8) ⇝ 4/1 | s:hh ]",
   "[ (31/8 → 4/1) ⇝ 33/8 | s:lt ]",
   "[ (31/8 → 4/1) ⇝ 33/8 | s:hh ]",
+]
+`;
+
+exports[`runs examples > example "lock" example index 0 1`] = `
+[
+  "[ 0/1 → 1/1 | delay:{s:sd} lock:1 ]",
+  "[ 1/1 → 2/1 | delay:{s:sd} lock:1 ]",
+  "[ 2/1 → 3/1 | delay:{s:sd} lock:1 ]",
+  "[ 3/1 → 4/1 | delay:{s:sd} lock:1 ]",
 ]
 `;
 
