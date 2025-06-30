@@ -1,13 +1,13 @@
 /*
 superdough.mjs - <short description TODO>
-Copyright (C) 2022 Strudel contributors - see <https://github.com/tidalcycles/strudel/blob/main/packages/superdough/superdough.mjs>
+Copyright (C) 2022 Strudel contributors - see <https://codeberg.org/uzu/strudel/src/branch/main/packages/superdough/superdough.mjs>
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details. You should have received a copy of the GNU Affero General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import './feedbackdelay.mjs';
 import './reverb.mjs';
 import './vowel.mjs';
-import { clamp, nanFallback, _mod } from './util.mjs';
+import { clamp, nanFallback, _mod, cycleToSeconds } from './util.mjs';
 import workletsUrl from './worklets.mjs?audioworklet';
 import { createFilter, gainNode, getCompressor, getWorklet } from './helpers.mjs';
 import { map } from 'nanostores';
@@ -107,6 +107,10 @@ export async function aliasBank(...args) {
 }
 
 export function getSound(s) {
+  if (typeof s !== 'string') {
+    console.warn(`getSound: expected string got "${s}". fall back to triangle`);
+    return soundMap.get().triangle; // is this good?
+  }
   return soundMap.get()[s.toLowerCase()];
 }
 
@@ -139,7 +143,7 @@ const defaultDefaultValues = {
   delay: 0,
   byteBeatExpression: '0',
   delayfeedback: 0.5,
-  delaytime: 0.25,
+  delaysync: 3 / 16,
   orbit: 1,
   i: 1,
   velocity: 1,
@@ -446,7 +450,7 @@ function mapChannelNumbers(channels) {
   return (Array.isArray(channels) ? channels : [channels]).map((ch) => ch - 1);
 }
 
-export const superdough = async (value, t, hapDuration, cps) => {
+export const superdough = async (value, t, hapDuration, cps = 0.5) => {
   const ac = getAudioContext();
   t = typeof t === 'string' && t.startsWith('=') ? Number(t.slice(1)) : ac.currentTime + t;
   let { stretch } = value;
@@ -524,7 +528,8 @@ export const superdough = async (value, t, hapDuration, cps) => {
     vowel,
     delay = getDefaultValue('delay'),
     delayfeedback = getDefaultValue('delayfeedback'),
-    delaytime = getDefaultValue('delaytime'),
+    delaysync = getDefaultValue('delaysync'),
+    delaytime,
     orbit = getDefaultValue('orbit'),
     room,
     roomfade,
@@ -542,6 +547,8 @@ export const superdough = async (value, t, hapDuration, cps) => {
     compressorAttack,
     compressorRelease,
   } = value;
+
+  delaytime = delaytime ?? cycleToSeconds(delaysync, cps);
 
   const orbitChannels = mapChannelNumbers(
     multiChannelOrbits && orbit > 0 ? [orbit * 2 - 1, orbit * 2] : getDefaultValue('channels'),
@@ -571,6 +578,9 @@ export const superdough = async (value, t, hapDuration, cps) => {
 
   let audioNodes = [];
 
+  if (['-', '~', '_'].includes(s)) {
+    return;
+  }
   if (bank && s) {
     s = `${bank}_${s}`;
     value.s = s;
@@ -718,8 +728,8 @@ export const superdough = async (value, t, hapDuration, cps) => {
   // delay
   let delaySend;
   if (delay > 0 && delaytime > 0 && delayfeedback > 0) {
-    const delyNode = getDelay(orbit, delaytime, delayfeedback, t, orbitChannels);
-    delaySend = effectSend(post, delyNode, delay);
+    const delayNode = getDelay(orbit, delaytime, delayfeedback, t, orbitChannels);
+    delaySend = effectSend(post, delayNode, delay);
     audioNodes.push(delaySend);
   }
   // reverb
