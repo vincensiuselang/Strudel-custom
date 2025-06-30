@@ -150,6 +150,17 @@ const defaultDefaultValues = {
   fft: 8,
 };
 
+const defaultDefaultDefaultValues = Object.freeze({ ...defaultDefaultValues });
+
+export function setDefault(control, value) {
+  const main = getControlName(control);
+  defaultDefaultValues[main] = value;
+}
+
+export function resetDefaults() {
+  defaultDefaultValues = { ...defaultDefaultDefaultValues };
+}
+
 let defaultControls = new Map(Object.entries(defaultDefaultValues));
 
 export function setDefaultValue(key, value) {
