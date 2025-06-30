@@ -252,7 +252,7 @@ export const getTrigger =
       }
       if (hap.context.onTrigger) {
         // call signature of output / onTrigger is different...
-        await hap.context.onTrigger(getTime() + deadline, hap, getTime(), cps, t);
+        await hap.context.onTrigger(hap, getTime(), cps, t);
       }
     } catch (err) {
       logger(`[cyclist] error: ${err.message}`, 'error');
