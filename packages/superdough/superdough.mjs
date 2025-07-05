@@ -126,7 +126,7 @@ export const getAudioDevices = async () => {
   return devicesMap;
 };
 
-const defaultDefaultValues = {
+let defaultDefaultValues = {
   s: 'triangle',
   gain: 0.8,
   postgain: 1,
@@ -153,8 +153,8 @@ const defaultDefaultValues = {
 const defaultDefaultDefaultValues = Object.freeze({ ...defaultDefaultValues });
 
 export function setDefault(control, value) {
-  const main = getControlName(control);
-  defaultDefaultValues[main] = value;
+  // const main = getControlName(control); // we cant do this because superdough is independent of strudel/core
+  defaultDefaultValues[control] = value;
 }
 
 export function resetDefaults() {
