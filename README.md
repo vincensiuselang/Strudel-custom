@@ -38,7 +38,7 @@ Licensing info for the default sound banks can be found over on the [dough-sampl
 
 ## Contributing
 
-There are many ways to contribute to this project! See [contribution guide](./CONTRIBUTING.md).
+There are many ways to contribute to this project! See [contribution guide](./CONTRIBUTING.md). You can find the full list of contributors [here](https://codeberg.org/uzu/strudel/activity/contributors).
 
 ## Community
 
