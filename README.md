@@ -1,7 +1,5 @@
 # strudel
 
-<img src="https://strudel.cc/icons/strudel_icon.png" style="width:100px;float:right" />
-
 Live coding patterns on the web
 https://strudel.cc/
 
