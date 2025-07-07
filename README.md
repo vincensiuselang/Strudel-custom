@@ -40,12 +40,6 @@ Licensing info for the default sound banks can be found over on the [dough-sampl
 
 There are many ways to contribute to this project! See [contribution guide](./CONTRIBUTING.md).
 
-<a href="https://codeberg.org/uzu/strudel/activity/contributors">
-  <img src="https://contrib.rocks/image?repo=tidalcycles/strudel" />
-</a>
-
-Made with [contrib.rocks](https://contrib.rocks).
-
 ## Community
 
 There is a #strudel channel on the TidalCycles discord: <https://discord.com/invite/HGEdXmRkzT>
