@@ -26,6 +26,5 @@ const keymaps = {
 
 export function keybindings(name) {
   const active = keymaps[name];
-  return [keymap.of(defaultKeymap), keymap.of(historyKeymap), active ? active() : []];
-  // keymap.of(searchKeymap),
+  return [active ? active() : [], keymap.of(historyKeymap), keymap.of(defaultKeymap)];
 }
