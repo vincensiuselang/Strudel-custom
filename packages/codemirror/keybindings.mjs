@@ -21,10 +21,11 @@ const vscodeExtension = (options) => [vscodePlugin].concat(options ?? []);
 const keymaps = {
   vim,
   emacs,
+  codemirror: () => keymap.of(defaultKeymap),
   vscode: vscodeExtension,
 };
 
 export function keybindings(name) {
   const active = keymaps[name];
-  return [active ? active() : [], keymap.of(historyKeymap), keymap.of(defaultKeymap)];
+  return [active ? active() : [], keymap.of(historyKeymap)];
 }
