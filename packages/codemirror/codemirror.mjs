@@ -38,6 +38,13 @@ const extensions = {
   isFlashEnabled,
   keybindings,
   isTabIndentationEnabled: (on) => (on ? keymap.of([indentWithTab]) : []),
+  isMultiCursorEnabled: (on) =>
+    on
+      ? [
+          EditorState.allowMultipleSelections.of(true),
+          EditorView.clickAddsSelectionRange.of((ev) => ev.metaKey || ev.ctrlKey),
+        ]
+      : [],
 };
 const compartments = Object.fromEntries(Object.keys(extensions).map((key) => [key, new Compartment()]));
 
@@ -53,6 +60,7 @@ export const defaultSettings = {
   isTooltipEnabled: false,
   isLineWrappingEnabled: false,
   isTabIndentationEnabled: false,
+  isMultiCursorEnabled: false,
   theme: 'strudelTheme',
   fontFamily: 'monospace',
   fontSize: 18,
