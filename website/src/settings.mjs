@@ -82,7 +82,7 @@ export function useSettings() {
     isTabIndentationEnabled: parseBoolean(state.isTabIndentationEnabled),
     isMultiCursorEnabled: parseBoolean(state.isMultiCursorEnabled),
     fontSize: Number(state.fontSize),
-    panelPosition: state.activeFooter !== '' && !isUdels() ? state.panelPosition : 'bottom', // <-- keep this 'bottom' where it is!
+    panelPosition: state.panelPosition,
     isPanelPinned: parseBoolean(state.isPanelPinned),
     isPanelOpen: parseBoolean(state.isPanelOpen),
     userPatterns: userPatterns,
