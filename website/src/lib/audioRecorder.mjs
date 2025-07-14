@@ -1,5 +1,4 @@
 import { encode } from 'wav-encoder';
-// lamejs will be loaded globally via a script tag
 import { getAudioContext, getDestinationGain, panic } from '@strudel/superdough';
 import { uploadSamplesToDB, userSamplesDBConfig } from '../repl/idbutils.mjs';
 
@@ -55,36 +54,49 @@ export const saveRecording = async (audioBuffer, filename, format) => {
 function encodeAudioBufferToMp3(audioBuffer) {
   const channels = audioBuffer.numberOfChannels;
   const sampleRate = audioBuffer.sampleRate;
-  const kbps = 128; // MP3 bitrate (e.g., 128 kbps)
+  const kbps = 128; // MP3 bitrate
 
-  // Use the globally available Lame object
-  const mp3encoder = new Lame.Mp3Encoder(channels, sampleRate, kbps);
+  const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
   const mp3Data = [];
 
-  const leftChannel = audioBuffer.getChannelData(0);
-  const rightChannel = channels > 1 ? audioBuffer.getChannelData(1) : null;
+  const samplesLeft = audioBuffer.getChannelData(0);
+  const samplesRight = channels > 1 ? audioBuffer.getChannelData(1) : null;
 
-  const sampleBlockSize = 1152; // Can be 1152 or 576
+  // Convert Float32 samples to Int16
+  const convertBuffer = (array) => {
+    const data = new Int16Array(array.length);
+    for (let i = 0; i < array.length; i++) {
+      data[i] = Math.max(-1, Math.min(1, array[i])) * 32767;
+    }
+    return data;
+  };
 
-  for (let i = 0; i < leftChannel.length; i += sampleBlockSize) {
-    const leftChunk = leftChannel.subarray(i, i + sampleBlockSize);
-    const rightChunk = rightChannel ? rightChannel.subarray(i, i + sampleBlockSize) : null;
+  const dataLeft = convertBuffer(samplesLeft);
+  const dataRight = samplesRight ? convertBuffer(samplesRight) : null;
+
+  const sampleBlockSize = 1152;
+  for (let i = 0; i < dataLeft.length; i += sampleBlockSize) {
+    const leftChunk = dataLeft.subarray(i, i + sampleBlockSize);
+    let rightChunk = null;
+    if (dataRight) {
+      rightChunk = dataRight.subarray(i, i + sampleBlockSize);
+    }
 
     let mp3buf;
-    if (rightChunk) {
+    if (channels > 1) {
       mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
     } else {
       mp3buf = mp3encoder.encodeBuffer(leftChunk);
     }
 
     if (mp3buf.length > 0) {
-      mp3Data.push(new Int8Array(mp3buf));
+      mp3Data.push(new Uint8Array(mp3buf));
     }
   }
 
   const mp3buf = mp3encoder.flush();
   if (mp3buf.length > 0) {
-    mp3Data.push(new Int8Array(mp3buf));
+    mp3Data.push(new Uint8Array(mp3buf));
   }
 
   return new Blob(mp3Data, { type: 'audio/mp3' });
