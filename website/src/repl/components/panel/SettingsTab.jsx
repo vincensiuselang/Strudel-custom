@@ -66,21 +66,8 @@ function FormItem({ label, children, sublabel }) {
 
 const themeOptions = Object.fromEntries(Object.keys(themes).map((k) => [k, k]));
 const fontFamilyOptions = {
-  monospace: 'monospace',
-  Courier: 'Courier',
-  CutiePi: 'CutiePi',
-  JetBrains: 'JetBrains',
-  Hack: 'Hack',
-  FiraCode: 'FiraCode',
-  'FiraCode-SemiBold': 'FiraCode SemiBold',
-  teletext: 'teletext',
-  mode7: 'mode7',
-  BigBlueTerminal: 'BigBlueTerminal',
-  x3270: 'x3270',
   Monocraft: 'Monocraft',
   PressStart: 'PressStart2P',
-  'we-come-in-peace': 'we-come-in-peace',
-  galactico: 'galactico',
 };
 
 const RELOAD_MSG = 'Changing this setting requires the window to reload itself. OK?';

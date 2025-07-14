@@ -10,6 +10,8 @@ import redText, { settings as redTextSettings } from './themes/red-text.mjs';
 import greenText, { settings as greenTextSettings } from './themes/green-text.mjs';
 import archBtw, { settings as archBtwSettings } from './themes/archBtw.mjs';
 import fruitDaw, { settings as fruitDawSettings } from './themes/fruitDaw.mjs';
+import darkPink, { settings as darkPinkSettings } from './themes/dark-pink.mjs';
+import whitePink, { settings as whitePinkSettings } from './themes/white-pink.mjs';
 
 import bluescreenlight, { settings as bluescreenlightsettings } from './themes/bluescreenlight.mjs';
 
@@ -81,6 +83,8 @@ export const themes = {
   vscodeLight,
   whitescreen,
   xcodeLight,
+  darkPink,
+  whitePink,
 };
 
 export const settings = {
@@ -124,6 +128,8 @@ export const settings = {
   vscodeLight: vscodeLightSettings,
   xcodeLight: xcodeLightSettings,
   tokyoNightDay: tokyoNightDaySettings,
+  darkPink: darkPinkSettings,
+  whitePink: whitePinkSettings,
 };
 
 function getColors(str) {

@@ -1,7 +1,67 @@
 import useEvent from '@src/useEvent.mjs';
 import { useStore } from '@nanostores/react';
-import { getAudioContext, soundMap, connectToDestination } from '@strudel/webaudio';
-import { useMemo, useRef, useState } from 'react';
+import { getAudioContext, soundMap, connectToDestination, loadBuffer } from '@strudel/webaudio';
+import { useMemo, useRef, useState, useEffect } from 'react';
+import { registerSamplesFromDB, userSamplesDBConfig } from '../../idbutils.mjs';
+import { setOnRecordingCompleteCallback } from '../../../lib/audioRecorder.mjs';
+
+function SoundEntry({ name, data, onTrigger, trigRef }) {
+  const ref = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (data.type === 'sample') {
+          const samples = Array.isArray(data.samples) ? data.samples : Object.values(data.samples).flat();
+          samples.forEach(sampleUrl => {
+            loadBuffer(sampleUrl, getAudioContext());
+          });
+        }
+        observer.disconnect();
+      }
+    });
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, [data]);
+
+  return (
+    <span
+      ref={ref}
+      key={name}
+      className="cursor-pointer hover:opacity-50"
+      onMouseDown={async () => {
+        const ctx = getAudioContext();
+        const params = {
+          note: ['synth', 'soundfont'].includes(data.type) ? 'a3' : undefined,
+          s: name,
+          clip: 1,
+          release: 0.5,
+          sustain: 1,
+          duration: 0.5,
+        };
+        const time = ctx.currentTime + 0.05;
+        const onended = () => trigRef.current?.node?.disconnect();
+        trigRef.current = Promise.resolve(onTrigger(time, params, onended));
+        trigRef.current.then((ref) => {
+          connectToDestination(ref?.node);
+        });
+      }}
+    >
+      {' '}
+      {name}
+      {data?.type === 'sample' ? `(${getSamples(data.samples)})` : ''}
+      {data?.type === 'soundfont' ? `(${data.fonts.length})` : ''}
+    </span>
+  );
+}
 import { settingsMap, useSettings } from '../../../settings.mjs';
 import { ButtonGroup } from './Forms.jsx';
 import ImportSoundsButton from './ImportSoundsButton.jsx';
@@ -56,6 +116,13 @@ export function SoundsTab() {
       ref?.stop(getAudioContext().currentTime + 0.01);
     });
   });
+
+  useEffect(() => {
+    setOnRecordingCompleteCallback(() => {
+      registerSamplesFromDB(userSamplesDBConfig);
+    });
+  }, []);
+
   return (
     <div id="sounds-tab" className="px-4 flex flex-col w-full h-full text-foreground">
       <Textbox placeholder="Search" value={search} onChange={(v) => setSearch(v)} />
@@ -75,36 +142,9 @@ export function SoundsTab() {
       </div>
 
       <div className="min-h-0 max-h-full grow overflow-auto  text-sm break-normal pb-2">
-        {soundEntries.map(([name, { data, onTrigger }]) => {
-          return (
-            <span
-              key={name}
-              className="cursor-pointer hover:opacity-50"
-              onMouseDown={async () => {
-                const ctx = getAudioContext();
-                const params = {
-                  note: ['synth', 'soundfont'].includes(data.type) ? 'a3' : undefined,
-                  s: name,
-                  clip: 1,
-                  release: 0.5,
-                  sustain: 1,
-                  duration: 0.5,
-                };
-                const time = ctx.currentTime + 0.05;
-                const onended = () => trigRef.current?.node?.disconnect();
-                trigRef.current = Promise.resolve(onTrigger(time, params, onended));
-                trigRef.current.then((ref) => {
-                  connectToDestination(ref?.node);
-                });
-              }}
-            >
-              {' '}
-              {name}
-              {data?.type === 'sample' ? `(${getSamples(data.samples)})` : ''}
-              {data?.type === 'soundfont' ? `(${data.fonts.length})` : ''}
-            </span>
-          );
-        })}
+        {soundEntries.map(([name, { data, onTrigger }]) => (
+          <SoundEntry key={name} name={name} data={data} onTrigger={onTrigger} trigRef={trigRef} />
+        ))}
         {!soundEntries.length && soundsFilter === 'importSounds' ? (
           <div className="prose dark:prose-invert min-w-full pt-2 pb-8 px-4">
             <ImportSoundsButton onComplete={() => settingsMap.setKey('soundsFilter', 'user')} />

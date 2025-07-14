@@ -136,6 +136,11 @@ export default defineConfig({
   base,
   vite: {
     plugins: [bundleAudioWorkletPlugin()],
+    resolve: {
+      alias: {
+        '@strudel/superdough': 'C:/strudel/packages/superdough/index.mjs',
+      },
+    },
     ssr: {
       // Example: Force a broken package to skip SSR processing, if needed
       // external: ['fraction.js'], // https://github.com/infusion/Fraction.js/issues/51

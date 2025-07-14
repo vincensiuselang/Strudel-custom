@@ -290,6 +290,8 @@ export function initializeAudioOutput() {
   destinationGain.connect(audioContext.destination);
 }
 
+export const getDestinationGain = () => destinationGain;
+
 // input: AudioNode, channels: ?Array<int>
 export const connectToDestination = (input, channels = [0, 1]) => {
   const ctx = getAudioContext();

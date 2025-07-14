@@ -1,17 +1,75 @@
 import PlayCircleIcon from '@heroicons/react/20/solid/PlayCircleIcon';
 import StopCircleIcon from '@heroicons/react/20/solid/StopCircleIcon';
+import { useState, useEffect, useRef } from 'react';
+import { RenamePrompt } from './RenamePrompt';
 import cx from '@src/cx.mjs';
 import { useSettings, setIsZen } from '../../settings.mjs';
+import { startRecording, stopRecording, getIsRecording, saveRecording, setOnStopPlaybackCallback } from '../../lib/audioRecorder.mjs';
 import '../Repl.css';
 
 const { BASE_URL } = import.meta.env;
 const baseNoTrailing = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
 
 export function Header({ context, embedded = false }) {
-  const { started, pending, isDirty, activeCode, handleTogglePlay, handleEvaluate, handleShuffle, handleShare } =
+  const { started, pending, isDirty, activeCode, handleTogglePlay, handleEvaluate, handleShuffle, handleShare, stopPlayback } =
     context;
   const isEmbedded = typeof window !== 'undefined' && (embedded || window.location !== window.parent.location);
   const { isZen, isButtonRowHidden, isCSSAnimationDisabled, fontFamily } = useSettings();
+  const [isRecording, setIsRecording] = useState(getIsRecording());
+  const [showRenamePrompt, setShowRenamePrompt] = useState(false);
+  const [pendingRecordingBlob, setPendingRecordingBlob] = useState(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const timerIntervalRef = useRef(null);
+
+  useEffect(() => {
+    if (isRecording) {
+      timerIntervalRef.current = setInterval(() => {
+        setRecordingTime((prevTime) => prevTime + 1);
+      }, 1000);
+    } else {
+      clearInterval(timerIntervalRef.current);
+      setRecordingTime(0);
+    }
+    return () => clearInterval(timerIntervalRef.current);
+  }, [isRecording]);
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleRecordToggle = () => {
+    if (isRecording) {
+      stopRecording((blob) => {
+        setPendingRecordingBlob(blob);
+        setShowRenamePrompt(true);
+      });
+    } else {
+      startRecording();
+    }
+    setIsRecording(getIsRecording());
+  };
+
+  const handleRenameConfirm = (filename, format) => {
+    if (pendingRecordingBlob) {
+      saveRecording(pendingRecordingBlob, filename, format);
+    }
+    setPendingRecordingBlob(null);
+    setShowRenamePrompt(false);
+  };
+
+  const handleRenameCancel = () => {
+    // Discard the recording if cancelled
+    setPendingRecordingBlob(null);
+    setShowRenamePrompt(false);
+  };
+
+  useEffect(() => {
+    setOnStopPlaybackCallback(() => {
+      stopPlayback();
+    });
+  }, [stopPlayback]);
 
   return (
     <header
@@ -83,6 +141,23 @@ export function Header({ context, embedded = false }) {
             )}
           </button>
           <button
+            onClick={handleRecordToggle}
+            title={isRecording ? 'stop recording' : 'start recording'}
+            className={cx(
+              !isEmbedded ? 'p-2' : 'px-2',
+              'hover:opacity-50',
+              isRecording && !isCSSAnimationDisabled && 'animate-pulse text-red-500',
+              (pending || isEmbedded) && 'opacity-50 cursor-not-allowed',
+            )}
+            disabled={pending || isEmbedded}
+          >
+            <span className={cx('flex items-center space-x-2')}>
+              {isRecording ? <StopCircleIcon className="w-6 h-6" /> : <PlayCircleIcon className="w-6 h-6" />}
+              {!isEmbedded && <span>{isRecording ? 'stop recording' : 'record'}</span>}
+              {isRecording && <span className="ml-2 text-sm">{formatTime(recordingTime)}</span>}
+            </span>
+          </button>
+          <button
             onClick={handleEvaluate}
             title="update"
             className={cx(
@@ -145,6 +220,14 @@ export function Header({ context, embedded = false }) {
           )} */}
         </div>
       )}
+      {showRenamePrompt && (
+        <RenamePrompt
+          defaultName={`beat-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}_${new Date().toTimeString().slice(0, 8).replace(/:/g, '')}.wav`}
+          onConfirm={handleRenameConfirm}
+          onCancel={handleRenameCancel}
+        />
+      )}
     </header>
   );
 }
+

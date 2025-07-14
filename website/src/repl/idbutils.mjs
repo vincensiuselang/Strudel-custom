@@ -36,58 +36,41 @@ export function registerSamplesFromDB(config = userSamplesDBConfig, onComplete =
     query.onsuccess = (event) => {
       const soundFiles = event.target.result;
       if (!soundFiles?.length) {
+        onComplete();
         return;
       }
-      const sounds = new Map();
 
       Promise.all(
-        [...soundFiles]
-          .sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }))
-          .map((soundFile, i) => {
-            const title = soundFile.title;
-            if (!isAudioFile(title)) {
-              return;
-            }
-            const splitRelativePath = soundFile.id.split('/');
-            let parentDirectory =
-              //fallback to file name before period and seperator if no parent directory
-              splitRelativePath[splitRelativePath.length - 2] ?? soundFile.id.split(/\W+/)[0] ?? 'user';
-            const blob = soundFile.blob;
-
-            return blobToDataUrl(blob).then((soundPath) => {
-              const titlePathMap = sounds.get(parentDirectory) ?? new Map();
-
-              titlePathMap.set(title, soundPath);
-
-              sounds.set(parentDirectory, titlePathMap);
-              return;
-            });
-          }),
-      )
-        .then(() => {
-          sounds.forEach((titlePathMap, key) => {
-            const value = Array.from(titlePathMap.keys())
-              .sort((a, b) => {
-                return a.localeCompare(b);
-              })
-              .map((title) => titlePathMap.get(title));
-
-            registerSound(key, (t, hapValue, onended) => onTriggerSample(t, hapValue, onended, value), {
-              type: 'sample',
-              samples: value,
-              baseUrl: undefined,
-              prebake: false,
-              tag: undefined,
-            });
+        soundFiles.map(soundFile => {
+          if (!soundFile || soundFile.title === undefined || !isAudioFile(soundFile.title)) {
+            return null;
+          }
+          const name = soundFile.title.substring(0, soundFile.title.lastIndexOf('.')) || soundFile.title;
+          return blobToDataUrl(soundFile.blob).then(soundPath => {
+            return { name, soundPath };
           });
-
-          logger('imported sounds registered!', 'success');
-          onComplete();
         })
-        .catch((error) => {
-          logger('Something went wrong while registering saved samples from the index db', 'error');
-          console.error(error);
+      )
+      .then(results => {
+        const validSounds = results.filter(Boolean);
+        validSounds.forEach(({ name, soundPath }) => {
+          const soundUrlArray = [soundPath];
+          registerSound(name, (t, hapValue, onended) => onTriggerSample(t, hapValue, onended, soundUrlArray), {
+            type: 'sample',
+            samples: soundUrlArray,
+            baseUrl: undefined,
+            prebake: false,
+            tag: 'user'
+          });
         });
+        logger('imported sounds registered!', 'success');
+        onComplete();
+      })
+      .catch((error) => {
+        logger('Something went wrong while registering saved samples from the index db', 'error');
+        console.error(error);
+        onComplete();
+      });
     };
   });
 }
@@ -171,20 +154,20 @@ async function processFilesForIDB(files) {
   });
 }
 
-export async function uploadSamplesToDB(config, files) {
+export async function uploadSamplesToDB(config, files, onComplete) {
   logger('procesing user samples...');
-  await processFilesForIDB(files).then((files) => {
-    logger('user samples processed... opening db');
-    const onOpened = (objectStore, _db) => {
-      logger('index db opened... writing files to db');
-      files.forEach((file) => {
-        if (file == null) {
-          return;
-        }
-        objectStore.put(file);
-      });
-      logger('user samples written successfully');
-    };
-    openDB(config, onOpened);
-  });
+  const processedFiles = Array.isArray(files) ? files : [files];
+
+  const onOpened = (objectStore, _db) => {
+    logger('index db opened... writing files to db');
+    processedFiles.forEach((file) => {
+      if (file == null) {
+        return;
+      }
+      objectStore.put(file);
+    });
+    logger('user samples written successfully');
+    onComplete();
+  };
+  openDB(config, onOpened);
 }

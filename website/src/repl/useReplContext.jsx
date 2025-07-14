@@ -180,6 +180,12 @@ export function useReplContext() {
     editorRef.current?.toggle();
   };
 
+  const stopPlayback = () => {
+    if (started) {
+      editorRef.current?.toggle();
+    }
+  };
+
   const resetEditor = async () => {
     (await getModule('@strudel/tonal'))?.resetVoicings();
     resetDefaults();
@@ -229,6 +235,7 @@ export function useReplContext() {
     error,
     editorRef,
     containerRef,
+    stopPlayback,
   };
   return context;
 }

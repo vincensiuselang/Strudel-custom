@@ -3,10 +3,11 @@ import { getAudioContext, registerSound } from './index.mjs';
 import { getADSRValues, getParamADSR, getPitchEnvelope, getVibratoOscillator } from './helpers.mjs';
 import { logger } from './logger.mjs';
 
-const bufferCache = {}; // string: Promise<ArrayBuffer>
-const loadCache = {}; // string: Promise<ArrayBuffer>
+const bufferCache = new Map(); // string: Promise<ArrayBuffer>
+const loadCache = new Map(); // string: Promise<ArrayBuffer>
+const MAX_CACHE_SIZE = 100;
 
-export const getCachedBuffer = (url) => bufferCache[url];
+export const getCachedBuffer = (url) => bufferCache.get(url);
 
 function humanFileSize(bytes, si) {
   var thresh = si ? 1000 : 1024;
@@ -100,10 +101,10 @@ export const getSampleBufferSource = async (hapValue, bank, resolveUrl) => {
 export const loadBuffer = (url, ac, s, n = 0) => {
   const label = s ? `sound "${s}:${n}"` : 'sample';
   url = url.replace('#', '%23');
-  if (!loadCache[url]) {
+  if (!loadCache.has(url)) {
     logger(`[sampler] load ${label}..`, 'load-sample', { url });
     const timestamp = Date.now();
-    loadCache[url] = fetch(url)
+    loadCache.set(url, fetch(url)
       .then((res) => res.arrayBuffer())
       .then(async (res) => {
         const took = Date.now() - timestamp;
@@ -111,11 +112,15 @@ export const loadBuffer = (url, ac, s, n = 0) => {
         // const downSpeed = humanFileSize(res.byteLength / took);
         logger(`[sampler] load ${label}... done! loaded ${size} in ${took}ms`, 'loaded-sample', { url });
         const decoded = await ac.decodeAudioData(res);
-        bufferCache[url] = decoded;
+        if (bufferCache.size >= MAX_CACHE_SIZE) {
+            const firstKey = bufferCache.keys().next().value;
+            bufferCache.delete(firstKey);
+        }
+        bufferCache.set(url, decoded);
         return decoded;
-      });
+      }));
   }
-  return loadCache[url];
+  return loadCache.get(url);
 };
 
 export function reverseBuffer(buffer) {
@@ -128,7 +133,7 @@ export function reverseBuffer(buffer) {
 }
 
 export const getLoadedBuffer = (url) => {
-  return bufferCache[url];
+  return bufferCache.get(url);
 };
 
 function resolveSpecialPaths(base) {
@@ -290,12 +295,31 @@ export async function onTriggerSample(t, value, onended, bank, resolveUrl) {
     duration,
   } = value;
 
+  const { sampleUrl } = getSampleInfo(value, bank);
+  const ac = getAudioContext();
+
+  const cachedBuffer = getCachedBuffer(sampleUrl);
+  if (cachedBuffer) {
+    const bufferSource = ac.createBufferSource();
+    bufferSource.buffer = cachedBuffer;
+    bufferSource.playbackRate.value = speed;
+    const time = t + nudge;
+    bufferSource.start(time);
+    const out = ac.createGain();
+    bufferSource.connect(out);
+    bufferSource.onended = function () {
+      bufferSource.disconnect();
+      out.disconnect();
+      onended();
+    };
+    return { node: out, bufferSource, stop: (endTime) => bufferSource.stop(endTime) };
+  }
+
   // load sample
   if (speed === 0) {
     // no playback
     return;
   }
-  const ac = getAudioContext();
 
   // destructure adsr here, because the default should be different for synths and samples
   let [attack, decay, sustain, release] = getADSRValues([value.attack, value.decay, value.sustain, value.release]);
@@ -304,9 +328,7 @@ export async function onTriggerSample(t, value, onended, bank, resolveUrl) {
 
   // asny stuff above took too long?
   if (ac.currentTime > t) {
-    logger(`[sampler] still loading sound "${s}:${n}"`, 'highlight');
-    // console.warn('sample still loading:', s, n);
-    return;
+    t = ac.currentTime;
   }
   if (!bufferSource) {
     logger(`[sampler] could not load "${s}:${n}"`, 'error');

@@ -46,9 +46,8 @@ export default function ImportSoundsButton({ onComplete }) {
           id="audio_file"
           style={{ display: 'none' }}
           type="file"
-          directory=""
-          webkitdirectory=""
-          multiple
+          webkitdirectory="true"
+          mozdirectory="true"
           accept="audio/*, .wav, .mp3, .m4a, .flac, .aac, .ogg"
           onChange={() => {
             onChange();
