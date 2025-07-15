@@ -1,8 +1,8 @@
-import { registerSound, onTriggerSample } from '@strudel/webaudio';
+import { registerSound, onTriggerSample, soundMap } from '@strudel/webaudio';
 import { isAudioFile } from './files.mjs';
 import { logger } from '@strudel/core';
 
-//utilites for writing and reading to the indexdb
+// Utilities for writing and reading to IndexedDB
 
 export const userSamplesDBConfig = {
   dbName: 'samples',
@@ -11,163 +11,212 @@ export const userSamplesDBConfig = {
   version: 1,
 };
 
-// deletes all of the databases, useful for debugging
-function clearIDB() {
-  window.indexedDB
-    .databases()
-    .then((r) => {
-      for (var i = 0; i < r.length; i++) window.indexedDB.deleteDatabase(r[i].name);
-    })
-    .then(() => {
-      alert('All data cleared.');
-    });
-}
+// Open DB and initialize it if necessary
+function openDB(config) {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !'indexedDB' in window) {
+      console.log('IndexedDB is not supported.');
+      reject(new Error('IndexedDB not supported'));
+      return;
+    }
 
-// queries the DB, and registers the sounds so they can be played
-export function registerSamplesFromDB(config = userSamplesDBConfig, onComplete = () => {}) {
-  openDB(config, (objectStore) => {
-    const query = objectStore.getAll();
-    query.onerror = (e) => {
-      logger('User Samples failed to load ', 'error');
-      onComplete();
-      console.error(e?.target?.error);
+    const dbOpen = indexedDB.open(config.dbName, config.version);
+
+    dbOpen.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(config.table)) {
+        const objectStore = db.createObjectStore(config.table, { keyPath: 'id', autoIncrement: false });
+        config.columns.forEach((c) => {
+          objectStore.createIndex(c, c, { unique: false });
+        });
+      }
     };
 
-    query.onsuccess = (event) => {
-      const soundFiles = event.target.result;
-      if (!soundFiles?.length) {
-        onComplete();
-        return;
-      }
+    dbOpen.onerror = (event) => {
+      logger('Error opening DB', 'error');
+      console.error(`IndexedDB error: ${event.target.error}`);
+      reject(event.target.error);
+    };
 
-      Promise.all(
-        soundFiles.map(soundFile => {
-          if (!soundFile || soundFile.title === undefined || !isAudioFile(soundFile.title)) {
-            return null;
-          }
-          const name = soundFile.title.substring(0, soundFile.title.lastIndexOf('.')) || soundFile.title;
-          return blobToDataUrl(soundFile.blob).then(soundPath => {
-            return { name, soundPath };
-          });
-        })
-      )
-      .then(results => {
-        const validSounds = results.filter(Boolean);
-        validSounds.forEach(({ name, soundPath }) => {
-          const soundUrlArray = [soundPath];
-          registerSound(name, (t, hapValue, onended) => onTriggerSample(t, hapValue, onended, soundUrlArray), {
-            type: 'sample',
-            samples: soundUrlArray,
-            baseUrl: undefined,
-            prebake: false,
-            tag: 'user'
-          });
-        });
-        logger('imported sounds registered!', 'success');
-        onComplete();
-      })
-      .catch((error) => {
-        logger('Something went wrong while registering saved samples from the index db', 'error');
-        console.error(error);
-        onComplete();
-      });
+    dbOpen.onsuccess = (event) => {
+      resolve(event.target.result);
     };
   });
+}
+
+export function clearUserSamples(config = userSamplesDBConfig) {
+  return new Promise(async (resolve, reject) => {
+    let db;
+    try {
+      db = await openDB(config);
+      const transaction = db.transaction([config.table], 'readwrite');
+      const objectStore = transaction.objectStore(config.table);
+      objectStore.clear();
+
+      transaction.oncomplete = () => {
+        const allSounds = soundMap.get();
+        const soundsToKeep = Object.entries(allSounds).reduce((acc, [key, value]) => {
+          if (value.data.tag !== 'user') {
+            acc[key] = value;
+          }
+          return acc;
+        }, {});
+        soundMap.set(soundsToKeep);
+        logger('User samples cleared!', 'success');
+        db.close();
+        resolve();
+      };
+
+      transaction.onerror = (event) => {
+        logger('Failed to clear user samples', 'error');
+        db.close();
+        reject(event.target.error);
+      };
+    } catch (error) {
+      logger('Error in clearUserSamples', 'error');
+      console.error(error);
+      if (db) db.close();
+      reject(error);
+    }
+  });
+}
+
+export function registerSamplesFromDB(config = userSamplesDBConfig, onComplete = () => {}) {
+  (async () => {
+    let db;
+    try {
+      db = await openDB(config);
+      const transaction = db.transaction([config.table], 'readonly');
+      const objectStore = transaction.objectStore(config.table);
+      const query = objectStore.getAll();
+
+      transaction.oncomplete = () => db.close();
+      transaction.onerror = () => db.close();
+
+      query.onsuccess = async (event) => {
+        const soundFiles = event.target.result;
+        if (!soundFiles?.length) {
+          onComplete();
+          return;
+        }
+
+        try {
+          const results = await Promise.all(
+            soundFiles.map((soundFile) => {
+              if (!soundFile || soundFile.title === undefined || !isAudioFile(soundFile.title)) {
+                return null;
+              }
+              const pathParts = soundFile.id.split('/');
+              const name = pathParts.length > 1 ? pathParts[pathParts.length - 2] : soundFile.title.substring(0, soundFile.title.lastIndexOf('.')) || soundFile.title;
+              return blobToDataUrl(soundFile.blob).then((soundPath) => ({ name, soundPath, title: soundFile.title }));
+            }),
+          );
+
+          const validSounds = results.filter(Boolean);
+          const soundsByName = validSounds.reduce((acc, { name, soundPath, title }) => {
+            if (!acc[name]) {
+              acc[name] = [];
+            }
+            acc[name].push({ path: soundPath, title });
+            return acc;
+          }, {});
+
+          Object.entries(soundsByName).forEach(([name, samples]) => {
+            const soundPaths = samples.map((s) => s.path);
+            registerSound(name, (t, hapValue, onended) => onTriggerSample(t, hapValue, onended, soundPaths), {
+              type: 'sample',
+              samples: samples,
+              baseUrl: undefined,
+              prebake: false,
+              tag: 'user',
+            });
+          });
+          logger('imported sounds registered!', 'success');
+          onComplete();
+        } catch (error) {
+          logger('Something went wrong while registering saved samples from the index db', 'error');
+          console.error(error);
+          onComplete();
+        }
+      };
+    } catch (error) {
+      logger('Error in registerSamplesFromDB', 'error');
+      console.error(error);
+      if (db) db.close();
+      onComplete();
+    }
+  })();
 }
 
 async function blobToDataUrl(blob) {
   return new Promise((resolve) => {
-    var reader = new FileReader();
-    reader.onload = function (event) {
-      resolve(event.target.result);
-    };
+    const reader = new FileReader();
+    reader.onload = (event) => resolve(event.target.result);
     reader.readAsDataURL(blob);
   });
 }
 
-//open db and initialize it if necessary
-function openDB(config, onOpened) {
-  const { dbName, version, table, columns } = config;
-  if (typeof window === 'undefined') {
-    return;
-  }
-  if (!('indexedDB' in window)) {
-    console.log('IndexedDB is not supported.');
-    return;
-  }
-  const dbOpen = indexedDB.open(dbName, version);
-
-  dbOpen.onupgradeneeded = (_event) => {
-    const db = dbOpen.result;
-    const objectStore = db.createObjectStore(table, { keyPath: 'id', autoIncrement: false });
-    columns.forEach((c) => {
-      objectStore.createIndex(c, c, { unique: false });
-    });
-  };
-  dbOpen.onerror = (err) => {
-    logger('Something went wrong while trying to open the the client DB', 'error');
-    console.error(`indexedDB error: ${err.errorCode}`);
-  };
-
-  dbOpen.onsuccess = () => {
-    const db = dbOpen.result;
-    // lock store for writing
-    const writeTransaction = db.transaction([table], 'readwrite');
-    // get object store
-    const objectStore = writeTransaction.objectStore(table);
-    onOpened(objectStore, db);
-  };
-  return dbOpen;
-}
+let uniqueIdCounter = 0; // To ensure unique IDs even if webkitRelativePath is identical or missing
 
 async function processFilesForIDB(files) {
+  const audioFiles = Array.from(files).filter((f) => isAudioFile(f.name));
   return Promise.all(
-    Array.from(files)
-      .map((s) => {
-        const title = s.name;
-
-        if (!isAudioFile(title)) {
-          return;
-        }
-        //create obscured url to file system that can be fetched
-        const sUrl = URL.createObjectURL(s);
-        //fetch the sound and turn it into a buffer array
-        return fetch(sUrl).then((res) => {
-          return res.blob().then((blob) => {
-            const path = s.webkitRelativePath;
-            let id = path?.length ? path : title;
-            if (id == null || title == null || blob == null) {
-              return;
-            }
-            return {
-              title,
-              blob,
-              id,
-            };
-          });
+    audioFiles.map((s) => {
+      const title = s.name;
+      const sUrl = URL.createObjectURL(s);
+      return fetch(sUrl)
+        .then((res) => res.blob())
+        .then((blob) => {
+          URL.revokeObjectURL(sUrl);
+          const path = s.webkitRelativePath;
+          // Generate a unique ID for each file
+          // Use webkitRelativePath if available, otherwise combine title with a counter
+          const id = path?.length ? path : `${title}_${Date.now()}_${uniqueIdCounter++}`;
+          return { title, blob, id };
         });
-      })
-      .filter(Boolean),
-  ).catch((error) => {
-    logger('Something went wrong while processing uploaded files', 'error');
-    console.error(error);
-  });
+    }),
+  );
 }
 
-export async function uploadSamplesToDB(config, files, onComplete) {
-  logger('procesing user samples...');
-  const processedFiles = Array.isArray(files) ? files : [files];
+export function uploadSamplesToDB(config, files) {
+  return new Promise(async (resolve, reject) => {
+    logger('Processing user samples...');
+    let db;
+    try {
+      const processedFiles = await processFilesForIDB(files);
 
-  const onOpened = (objectStore, _db) => {
-    logger('index db opened... writing files to db');
-    processedFiles.forEach((file) => {
-      if (file == null) {
+      if (!processedFiles || processedFiles.length === 0) {
+        logger('No valid files to write');
+        resolve();
         return;
       }
-      objectStore.put(file);
-    });
-    logger('user samples written successfully');
-    onComplete();
-  };
-  openDB(config, onOpened);
+
+      db = await openDB(config);
+      const transaction = db.transaction([config.table], 'readwrite');
+      const objectStore = transaction.objectStore(config.table);
+
+      processedFiles.forEach((file) => {
+        if (file != null) {
+          objectStore.put(file);
+        }
+      });
+
+      transaction.oncomplete = () => {
+        logger('User samples written successfully');
+        db.close();
+        resolve();
+      };
+
+      transaction.onerror = (event) => {
+        logger('Transaction error while writing samples', 'error');
+        db.close();
+        reject(event.target.error);
+      };
+    } catch (error) {
+      logger('Error in uploadSamplesToDB', 'error');
+      console.error(error);
+      if (db) db.close();
+      reject(error);
+    }
+  });
 }
