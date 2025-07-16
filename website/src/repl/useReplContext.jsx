@@ -202,7 +202,9 @@ export function useReplContext() {
     editorRef.current.setCode(patternData.code);
     if (reset) {
       await resetEditor();
-      handleEvaluate();
+      if (patternData.code) { // Only evaluate if there's code
+        handleEvaluate();
+      }
     }
   };
 

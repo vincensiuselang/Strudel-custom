@@ -1,272 +1,352 @@
 import {
   exportPatterns,
   importPatterns,
-  loadAndSetFeaturedPatterns,
-  loadAndSetPublicPatterns,
-  patternFilterName,
+  userPattern,
   useActivePattern,
   useViewingPatternData,
-  userPattern,
+  findParent,
+  setViewingPatternData,
 } from '../../../user_pattern_utils.mjs';
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { getMetadata } from '../../../metadata_parser.js';
-import { useExamplePatterns } from '../../useExamplePatterns.jsx';
 import { parseJSON, isUdels } from '../../util.mjs';
-import { ButtonGroup } from './Forms.jsx';
-import { settingsMap, useSettings } from '../../../settings.mjs';
-import { Pagination } from '../pagination/Pagination.jsx';
-import { useState } from 'react';
-import { useDebounce } from '../usedebounce.jsx';
+import { useSettings } from '../../../settings.mjs';
 import cx from '@src/cx.mjs';
+import {
+  FolderIcon,
+  DocumentIcon,
+  ChevronRightIcon,
+  EllipsisVerticalIcon,
+  FolderPlusIcon,
+  DocumentPlusIcon,
+  DocumentDuplicateIcon,
+  ArrowUpTrayIcon,
+  ArrowDownTrayIcon,
+  TrashIcon,
+} from '@heroicons/react/20/solid';
 
-export function PatternLabel({ pattern } /* : { pattern: Tables<'code'> } */) {
-  const meta = useMemo(() => getMetadata(pattern.code), [pattern]);
-
-  let title = meta.title;
-  if (title == null) {
-    const date = new Date(pattern.created_at);
-    if (!isNaN(date)) {
-      title = date.toLocaleDateString();
-    } else {
-      title = 'unnamed';
-    }
-  }
-
-  const author = Array.isArray(meta.by) ? meta.by.join(',') : 'Anonymous';
-  return <>{`${pattern.id}: ${title} by ${author.slice(0, 100)}`.slice(0, 60)}</>;
-}
-
-function PatternButton({ showOutline, onClick, pattern, showHiglight }) {
-  return (
-    <a
-      className={cx(
-        'mr-4 hover:opacity-50 cursor-pointer block',
-        showOutline && 'outline outline-1',
-        showHiglight && 'bg-selection',
-      )}
-      onClick={onClick}
-    >
-      <PatternLabel pattern={pattern} />
-    </a>
-  );
-}
-
-function PatternButtons({ patterns, activePattern, onClick, started }) {
-  const viewingPatternStore = useViewingPatternData();
-  const viewingPatternData = parseJSON(viewingPatternStore);
-  const viewingPatternID = viewingPatternData.id;
-  return (
-    <div className="">
-      {Object.values(patterns)
-        .reverse()
-        .map((pattern) => {
-          const id = pattern.id;
-          return (
-            <PatternButton
-              pattern={pattern}
-              key={id}
-              showHiglight={id === viewingPatternID}
-              showOutline={id === activePattern && started}
-              onClick={() => onClick(id)}
-            />
-          );
-        })}
-    </div>
-  );
-}
-
-function ActionButton({ children, onClick, label, labelIsHidden }) {
-  return (
-    <button className="hover:opacity-50 text-nowrap" onClick={onClick} title={label}>
-      {labelIsHidden !== true && label}
-      {children}
-    </button>
-  );
-}
-
+// Helper function to update the code editor window
 const updateCodeWindow = (context, patternData, reset = false) => {
   context.handleUpdate(patternData, reset);
 };
 
 const autoResetPatternOnChange = !isUdels();
 
-function UserPatterns({ context }) {
+// Context Menu for pattern/folder actions
+function ContextMenu({ onStartRename, onDelete, onClose, isFolder }) {
+  return (
+    <div className="bg-background border rounded-md shadow-lg p-2 space-y-1" onMouseLeave={onClose}>
+      {isFolder && (
+        <button onClick={() => { onStartRename(); onClose(); }} className="block w-full text-left px-2 py-1 hover:bg-lineHighlight rounded-md">Rename</button>
+      )}
+      <button onClick={() => { onDelete(); onClose(); }} className="block w-full text-left px-2 py-1 hover:bg-lineHighlight rounded-md text-red-500">Delete</button>
+    </div>
+  );
+}
+
+// A single node in the tree (either a pattern or a folder)
+function TreeNode({ item, level, context }) {
+  const [isOpen, setIsOpen] = useState(true);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState(item.name);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+
   const activePattern = useActivePattern();
   const viewingPatternStore = useViewingPatternData();
   const viewingPatternData = parseJSON(viewingPatternStore);
-  const { userPatterns, patternFilter } = useSettings();
   const viewingPatternID = viewingPatternData?.id;
+
+  const isFolder = item.type === 'folder';
+
+  const handleRename = () => {
+    userPattern.renameItem(item.id, newName);
+    setIsRenaming(false);
+  };
+
+  const startRenaming = () => {
+    setIsRenaming(true);
+    setShowContextMenu(false);
+  };
+
+  const handleDelete = () => {
+    userPattern.delete(item.id);
+    setShowContextMenu(false);
+  };
+
+  const handleItemClick = () => {
+    if (isFolder) {
+      if (viewingPatternID === item.id) {
+        setIsOpen(!isOpen);
+      }
+      setViewingPatternData(item);
+    } else {
+      updateCodeWindow(context, { ...item, collection: userPattern.collection }, autoResetPatternOnChange);
+    }
+  };
+
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowContextMenu(!showContextMenu);
+  };
+
+  // Drag and Drop Handlers
+  const handleDragStart = (e) => {
+    e.stopPropagation();
+    e.dataTransfer.setData('text/plain', item.id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    if (isFolder) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    if (isFolder) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (draggedId && draggedId !== item.id) {
+      if (isFolder) {
+        // Dropping into a folder
+        userPattern.moveItem(draggedId, item.id);
+      } else {
+        // Dropping onto a pattern
+        const tree = userPattern.getAll();
+        const targetParent = findParent(tree, item.id);
+        if (targetParent) {
+          userPattern.moveItem(draggedId, targetParent.id);
+        }
+      }
+    }
+  };
+
+  const indent = { paddingLeft: `${level * 1.5}rem` };
+
+  const patternTitle = useMemo(() => {
+    if (item.type === 'pattern') {
+      const meta = getMetadata(item.code || '');
+      const title = meta.title || item.name || item.id;
+      const author = Array.isArray(meta.by) ? meta.by.join(',') : 'Anonymous';
+      return `${item.id}: ${title} by ${author}`;
+    }
+    return item.name;
+  }, [item]);
+
   return (
-    <div className="flex flex-col gap-2 flex-grow overflow-hidden h-full pb-2 ">
-      <div className="pr-4 space-x-4  flex max-w-full overflow-x-auto">
-        <ActionButton
-          label="new"
-          onClick={() => {
-            const { data } = userPattern.createAndAddToDB();
-            updateCodeWindow(context, data);
-          }}
-        />
-        <ActionButton
-          label="duplicate"
-          onClick={() => {
-            const { data } = userPattern.duplicate(viewingPatternData);
-            updateCodeWindow(context, data);
-          }}
-        />
-        <ActionButton
-          label="delete"
-          onClick={() => {
-            const { data } = userPattern.delete(viewingPatternID);
-            updateCodeWindow(context, { ...data, collection: userPattern.collection });
-          }}
-        />
-        <label className="hover:opacity-50 cursor-pointer">
+    <div className="w-full" draggable="true" onDragStart={handleDragStart}>
+      <div
+        className={cx(
+          'flex items-center justify-between group w-full hover:bg-lineHighlight rounded-md',
+          viewingPatternID === item.id && 'bg-selection',
+          activePattern === item.id && context.started && 'outline outline-1',
+          isDragOver && 'bg-blue-500/30' // Highlight when dragging over
+        )}
+        style={indent}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <div className="flex items-center cursor-pointer flex-grow truncate" onClick={handleItemClick}>
+          {isFolder && (
+            <ChevronRightIcon className={cx('w-5 h-5 mr-1 transition-transform', isOpen && 'rotate-90')} />
+          )}
+          {isFolder ? <FolderIcon className="w-5 h-5 mr-2" /> : <DocumentIcon className="w-5 h-5 mr-2" />}
+          {isRenaming ? (
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onBlur={handleRename}
+              onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+              autoFocus
+              className="bg-transparent border-b"
+            />
+          ) : (
+            <span className="truncate">{patternTitle}</span>
+          )}
+        </div>
+        <div className="relative">
+          <button onClick={handleContextMenu} className="p-1 opacity-0 group-hover:opacity-100">
+            <EllipsisVerticalIcon className="w-5 h-5" />
+          </button>
+          {showContextMenu && (
+            <div
+              className="absolute z-10 bg-background border rounded-md shadow-lg p-2 space-y-1"
+              style={{ top: '100%', right: 0, minWidth: '120px' }}
+              onMouseLeave={() => setShowContextMenu(false)}
+            >
+              <ContextMenu 
+                onStartRename={startRenaming} 
+                onDelete={handleDelete} 
+                onClose={() => setShowContextMenu(false)} 
+                isFolder={isFolder}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {isFolder && isOpen && (
+        <PatternTree tree={item} level={level + 1} context={context} />
+      )}
+    </div>
+  );
+}
+
+// The recursive tree component
+function PatternTree({ tree, level, context }) {
+  const children = tree.children ? Object.values(tree.children).sort((a, b) => (a.name || '').localeCompare(b.name || '')) : [];
+
+  return (
+    <div
+      className="space-y-1 w-full"
+      // Removed onDragOver and onDrop from here
+    >
+      {children.map(item => (
+        <TreeNode key={item.id} item={item} level={level} context={context} />
+      ))}
+    </div>
+  );
+}
+
+// Reusable Action Button Component
+function ActionButton({ onClick, title, className = '', children }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={cx(
+        'flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors shadow-sm',
+        'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600',
+        'hover:bg-gray-100 dark:hover:bg-gray-700',
+        'text-gray-800 dark:text-gray-200',
+        className
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Main component for the user patterns tab
+function UserPatterns({ context }) {
+  const { userPatterns } = useSettings(); // This will re-render when patterns change
+  const viewingPatternData = parseJSON(useViewingPatternData());
+  const [isRootDragOver, setIsRootDragOver] = useState(false);
+
+  const handleCreatePattern = () => {
+    const { data } = userPattern.createAndAddToDB('root');
+    updateCodeWindow(context, data);
+  };
+
+  const handleCreateFolder = () => {
+    const folderName = prompt('Enter folder name:');
+    if (folderName) {
+      userPattern.createFolder(folderName, 'root');
+    }
+  };
+
+  const handleImportClick = () => {
+    document.getElementById('import-input').click();
+  };
+
+  const handleRootDrop = (e) => {
+    e.preventDefault();
+    setIsRootDragOver(false);
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (draggedId) {
+      userPattern.moveItem(draggedId, 'root');
+    }
+  };
+
+  const handleRootDragOver = (e) => {
+    e.preventDefault();
+    setIsRootDragOver(true);
+  };
+
+  const handleRootDragLeave = () => {
+    setIsRootDragOver(false);
+  };
+
+  return (
+    <div className="flex flex-col gap-2 flex-grow overflow-hidden h-full pb-2">
+      <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 flex-wrap pb-2">
+          <ActionButton onClick={handleCreatePattern} title="New Pattern">
+            <DocumentPlusIcon className="w-4 h-4" />
+            <span>Pattern</span>
+          </ActionButton>
+          <ActionButton onClick={handleCreateFolder} title="New Folder">
+            <FolderPlusIcon className="w-4 h-4" />
+            <span className="whitespace-nowrap">Folder</span>
+          </ActionButton>
+          <ActionButton onClick={() => userPattern.duplicate(viewingPatternData, 'root')} title="Duplicate Selected Pattern">
+            <DocumentDuplicateIcon className="w-4 h-4" />
+            <span className="whitespace-nowrap">Duplicate</span>
+          </ActionButton>
+
+          
+
+          <ActionButton onClick={handleImportClick} title="Import Patterns">
+            <ArrowUpTrayIcon className="w-4 h-4" />
+            <span className="whitespace-nowrap">Import</span>
+          </ActionButton>
           <input
+            id="import-input"
             style={{ display: 'none' }}
             type="file"
             multiple
             accept="text/plain,application/json"
             onChange={(e) => importPatterns(e.target.files)}
           />
-          import
-        </label>
-        <ActionButton label="export" onClick={exportPatterns} />
-
-        <ActionButton
-          label="delete-all"
-          onClick={() => {
-            const { data } = userPattern.clearAll();
-            updateCodeWindow(context, data);
-          }}
-        />
+          <ActionButton onClick={exportPatterns} title="Export All Patterns">
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            <span className="whitespace-nowrap">Export</span>
+          </ActionButton>
+          <ActionButton
+            onClick={() => userPattern.clearAll()}
+            title="Delete All Patterns and Folders"
+            className="bg-red-500/10 hover:bg-red-500/20 border-red-500/30 text-red-700 dark:text-red-400"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </ActionButton>
+        </div>
       </div>
 
-      <div className="overflow-auto h-full bg-background p-2 rounded-md">
-        {/* {patternFilter === patternFilterName.user && ( */}
-        <PatternButtons
-          onClick={(id) =>
-            updateCodeWindow(
-              context,
-              { ...userPatterns[id], collection: userPattern.collection },
-              autoResetPatternOnChange,
-            )
-          }
-          patterns={userPatterns}
-          started={context.started}
-          activePattern={activePattern}
-          viewingPatternID={viewingPatternID}
-        />
-        {/* )} */}
+      <div
+        className={cx(
+          "overflow-auto h-full bg-background p-2 rounded-md",
+          isRootDragOver && "outline outline-2 outline-blue-500"
+        )}
+        onDragOver={handleRootDragOver}
+        onDragLeave={handleRootDragLeave}
+        onDrop={handleRootDrop}
+      >
+        <PatternTree tree={userPatterns} level={0} context={context} />
       </div>
     </div>
   );
 }
 
-function PatternPageWithPagination({ patterns, patternOnClick, context, paginationOnChange, initialPage }) {
-  const [page, setPage] = useState(initialPage);
-  const debouncedPageChange = useDebounce(() => {
-    paginationOnChange(page);
-  });
-
-  const onPageChange = (pageNum) => {
-    setPage(pageNum);
-    debouncedPageChange();
-  };
-
-  const activePattern = useActivePattern();
-  return (
-    <div className="flex flex-grow flex-col  h-full overflow-hidden justify-between">
-      <div className="overflow-auto flex flex-col flex-grow bg-background p-2 rounded-md ">
-        <PatternButtons
-          onClick={(id) => patternOnClick(id)}
-          started={context.started}
-          patterns={patterns}
-          activePattern={activePattern}
-        />
-      </div>
-      <div className="flex items-center gap-2 py-2">
-        <label htmlFor="pattern pagination">Page</label>
-        <Pagination id="pattern pagination" currPage={page} onPageChange={onPageChange} />
-      </div>
-    </div>
-  );
-}
-
-let featuredPageNum = 1;
-function FeaturedPatterns({ context }) {
-  const examplePatterns = useExamplePatterns();
-  const collections = examplePatterns.collections;
-  const patterns = collections.get(patternFilterName.featured);
-  return (
-    <PatternPageWithPagination
-      patterns={patterns}
-      context={context}
-      initialPage={featuredPageNum}
-      patternOnClick={(id) => {
-        updateCodeWindow(
-          context,
-          { ...patterns[id], collection: patternFilterName.featured },
-          autoResetPatternOnChange,
-        );
-      }}
-      paginationOnChange={async (pageNum) => {
-        await loadAndSetFeaturedPatterns(pageNum - 1);
-        featuredPageNum = pageNum;
-      }}
-    />
-  );
-}
-
-let latestPageNum = 1;
-function LatestPatterns({ context }) {
-  const examplePatterns = useExamplePatterns();
-  const collections = examplePatterns.collections;
-  const patterns = collections.get(patternFilterName.public);
-  return (
-    <PatternPageWithPagination
-      patterns={patterns}
-      context={context}
-      initialPage={latestPageNum}
-      patternOnClick={(id) => {
-        updateCodeWindow(context, { ...patterns[id], collection: patternFilterName.public }, autoResetPatternOnChange);
-      }}
-      paginationOnChange={async (pageNum) => {
-        await loadAndSetPublicPatterns(pageNum - 1);
-        latestPageNum = pageNum;
-      }}
-    />
-  );
-}
-
-function PublicPatterns({ context }) {
-  const { patternFilter } = useSettings();
-  if (patternFilter === patternFilterName.featured) {
-    return <FeaturedPatterns context={context} />;
-  }
-  return <LatestPatterns context={context} />;
-}
-
+// The main export for the tab
 export function PatternsTab({ context }) {
-  const { patternFilter } = useSettings();
-
   return (
-    <div className="px-4 w-full text-foreground  space-y-2  flex flex-col overflow-hidden max-h-full h-full">
+    <div className="px-4 w-full text-foreground space-y-2 flex flex-col overflow-hidden max-h-full h-full">
       <UserPatterns context={context} />
     </div>
   );
-  /* return (
-    <div className="px-4 w-full text-foreground  space-y-2  flex flex-col overflow-hidden max-h-full h-full">
-      <ButtonGroup
-        value={patternFilter}
-        onChange={(value) => settingsMap.setKey('patternFilter', value)}
-        items={patternFilterName}
-      ></ButtonGroup>
-
-      {patternFilter === patternFilterName.user ? (
-        <UserPatterns context={context} />
-      ) : (
-        <PublicPatterns context={context} />
-      )}
-    </div>
-  ); */
 }

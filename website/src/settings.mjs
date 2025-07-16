@@ -58,12 +58,19 @@ export const parseBoolean = (booleanlike) => ([true, 'true'].includes(booleanlik
 export function useSettings() {
   const state = useStore(settingsMap);
 
-  const userPatterns = JSON.parse(state.userPatterns);
-  Object.keys(userPatterns).forEach((key) => {
-    const data = userPatterns[key];
-    data.id = data.id ?? key;
-    userPatterns[key] = data;
-  });
+  let userPatterns;
+  try {
+    userPatterns = JSON.parse(state.userPatterns);
+    if (typeof userPatterns !== 'object' || userPatterns === null) {
+      throw new Error('Corrupted pattern data: not an object.');
+    }
+  } catch (e) {
+    console.error("Error parsing user patterns, resetting to default:", e);
+    userPatterns = { id: 'root', type: 'folder', name: 'root', children: {} };
+    settingsMap.setKey('userPatterns', JSON.stringify(userPatterns));
+  }
+
+  // The problematic loop is now removed.
   return {
     ...state,
     isZen: parseBoolean(state.isZen),

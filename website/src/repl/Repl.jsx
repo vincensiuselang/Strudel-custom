@@ -11,6 +11,8 @@ import EmbeddedReplEditor from './components/EmbeddedReplEditor';
 import { useReplContext } from './useReplContext';
 import { useSettings } from '@src/settings.mjs';
 
+
+
 export function Repl({ embedded = false }) {
   const isEmbedded = embedded || isIframe();
   const Editor = isUdels() ? UdelsEditor : isEmbedded ? EmbeddedReplEditor : ReplEditor;

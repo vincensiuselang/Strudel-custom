@@ -18,7 +18,9 @@ function SoundEntry({ name, data, onTrigger, trigRef, isChild = false }) {
                 .flat()
                 .map((s) => s.path);
           samples.forEach((sampleUrl) => {
-            loadBuffer(sampleUrl, getAudioContext());
+            if (sampleUrl) {
+              loadBuffer(sampleUrl, getAudioContext());
+            }
           });
         }
         observer.disconnect();
