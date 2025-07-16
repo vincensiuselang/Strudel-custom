@@ -102,25 +102,51 @@ export function useReplContext() {
         setLatestCode(code);
         window.location.hash = '#' + code2hash(code);
         setDocumentTitle(code);
-        const viewingPatternData = getViewingPatternData();
+        
+
+        const rawViewingPatternData = getViewingPatternData();
+        const viewingPatternData = {
+          id: rawViewingPatternData?.id ?? '',
+          code: rawViewingPatternData?.code ?? '',
+          collection: rawViewingPatternData?.collection ?? userPattern.collection,
+          created_at: rawViewingPatternData?.created_at ?? Date.now(),
+          name: rawViewingPatternData?.name ?? '',
+          type: rawViewingPatternData?.type ?? 'pattern',
+        };
+
         setVersionDefaultsFrom(code);
         const data = { ...viewingPatternData, code };
         let id = data.id;
+
+        if (!userPattern.isValidID(id)) {
+          id = createPatternID();
+          data.id = id;
+        }
+
+        
         const isExamplePattern = viewingPatternData.collection !== userPattern.collection;
 
         if (isExamplePattern) {
           const codeHasChanged = code !== viewingPatternData.code;
           if (codeHasChanged) {
-            // fork example
             const newPattern = userPattern.duplicate(data);
-            id = newPattern.id;
-            setViewingPatternData(newPattern.data);
+            if (newPattern) {
+              id = newPattern.id;
+              setViewingPatternData(newPattern.data);
+            } else {
+              console.warn('Failed to duplicate pattern.');
+              setViewingPatternData({ id: data.id || createPatternID(), code: data.code, collection: userPattern.collection });
+            }
           }
         } else {
-          id = userPattern.isValidID(id) ? id : createPatternID();
           setViewingPatternData(userPattern.update(id, data).data);
         }
-        setActivePattern(id);
+
+        if (id) {
+          setActivePattern(id);
+        } else {
+          console.warn('Attempted to set active pattern with null or undefined ID.');
+        }
       },
       bgFill: false,
     });

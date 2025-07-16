@@ -481,8 +481,22 @@ export async function importPatterns(fileList) {
 }
 
 export async function exportPatterns() {
-  const userPatterns = userPattern.getAll();
-  const blob = new Blob([JSON.stringify(userPatterns, null, 2)], { type: 'application/json' });
+  const userPatternsTree = userPattern.getAll();
+  const flatPatterns = [];
+
+  function collectPatterns(node) {
+    if (node.type === 'pattern') {
+      flatPatterns.push(node);
+    } else if (node.type === 'folder' && node.children) {
+      for (const childId in node.children) {
+        collectPatterns(node.children[childId]);
+      }
+    }
+  }
+
+  collectPatterns(userPatternsTree);
+
+  const blob = new Blob([JSON.stringify(flatPatterns, null, 2)], { type: 'application/json' });
   const downloadLink = document.createElement('a');
   downloadLink.href = window.URL.createObjectURL(blob);
   const date = new Date().toISOString().split('T')[0];
