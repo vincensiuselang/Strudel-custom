@@ -106,31 +106,23 @@ export function registerSamplesFromDB(config = userSamplesDBConfig, onComplete =
               if (!soundFile || soundFile.title === undefined || !isAudioFile(soundFile.title)) {
                 return null;
               }
-              const pathParts = soundFile.id.split('/');
-              const name = pathParts.length > 1 ? pathParts[pathParts.length - 2] : soundFile.title.substring(0, soundFile.title.lastIndexOf('.')) || soundFile.title;
+              const name = soundFile.title.substring(0, soundFile.title.lastIndexOf('.')) || soundFile.title;
               return blobToDataUrl(soundFile.blob).then((soundPath) => ({ name, soundPath, title: soundFile.title }));
             }),
           );
 
           const validSounds = results.filter(Boolean);
-          const soundsByName = validSounds.reduce((acc, { name, soundPath, title }) => {
-            if (!acc[name]) {
-              acc[name] = [];
-            }
-            acc[name].push({ path: soundPath, title });
-            return acc;
-          }, {});
 
-          Object.entries(soundsByName).forEach(([name, samples]) => {
-            const soundPaths = samples.map((s) => s.path);
-            registerSound(name, (t, hapValue, onended) => onTriggerSample(t, hapValue, onended, soundPaths), {
+          validSounds.forEach(({ name, soundPath }) => {
+            registerSound(name, (t, hapValue, onended) => onTriggerSample(t, hapValue, onended, [soundPath]), {
               type: 'sample',
-              samples: samples,
+              samples: [{ path: soundPath, title: name }],
               baseUrl: undefined,
               prebake: false,
               tag: 'user',
             });
           });
+
           logger('imported sounds registered!', 'success');
           onComplete();
         } catch (error) {
@@ -162,7 +154,10 @@ async function processFilesForIDB(files) {
   const audioFiles = Array.from(files).filter((f) => isAudioFile(f.name));
   return Promise.all(
     audioFiles.map((s) => {
-      const title = s.name;
+                  const originalName = s.name.substring(0, s.name.lastIndexOf('.')) || s.name;
+      const sanitizedName = originalName.toLowerCase().replace(/[^a-z0-9_]+/g, '_');
+      const fileExtension = s.name.substring(s.name.lastIndexOf('.'));
+      const title = `${sanitizedName}${fileExtension}`;
       const sUrl = URL.createObjectURL(s);
       return fetch(sUrl)
         .then((res) => res.blob())

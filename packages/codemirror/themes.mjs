@@ -12,6 +12,7 @@ import archBtw, { settings as archBtwSettings } from './themes/archBtw.mjs';
 import fruitDaw, { settings as fruitDawSettings } from './themes/fruitDaw.mjs';
 import darkPink, { settings as darkPinkSettings } from './themes/dark-pink.mjs';
 import whitePink, { settings as whitePinkSettings } from './themes/white-pink.mjs';
+import transparanpink, { settings as transparanpinkSettings } from './themes/transparanpink.mjs';
 
 import bluescreenlight, { settings as bluescreenlightsettings } from './themes/bluescreenlight.mjs';
 
@@ -85,6 +86,7 @@ export const themes = {
   xcodeLight,
   darkPink,
   whitePink,
+  transparanpink,
 };
 
 export const settings = {
@@ -130,6 +132,7 @@ export const settings = {
   tokyoNightDay: tokyoNightDaySettings,
   darkPink: darkPinkSettings,
   whitePink: whitePinkSettings,
+  transparanpink: transparanpinkSettings,
 };
 
 function getColors(str) {

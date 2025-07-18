@@ -42,7 +42,7 @@ function SoundEntry({ name, data, onTrigger, trigRef, isChild = false }) {
     <span
       ref={ref}
       key={name}
-      className="cursor-pointer hover:opacity-50"
+      className="cursor-pointer hover:opacity-50 text-lg"
       onMouseDown={async () => {
         const ctx = getAudioContext();
         const params = {
@@ -193,17 +193,9 @@ export function SoundsTab() {
       </div>
 
       <div className="min-h-0 max-h-full grow overflow-auto  text-sm break-normal pb-2">
-        {soundsFilter === 'user' ? (
-          <SoundTree
-            soundEntries={soundEntries}
-            onTrigger={(t, p, o) => soundMap.get()[p.s].onTrigger(t, p, o)}
-            trigRef={trigRef}
-          />
-        ) : (
-          soundEntries.map(([name, { data, onTrigger }]) => (
+        {soundEntries.map(([name, { data, onTrigger }]) => (
             <SoundEntry key={name} name={name} data={data} onTrigger={onTrigger} trigRef={trigRef} />
-          ))
-        )}
+          ))}
         {!soundEntries.length && soundsFilter === 'importSounds' ? (
           <div className="prose dark:prose-invert min-w-full pt-2 pb-8 px-4">
             <div className="flex gap-2">
