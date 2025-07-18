@@ -1,49 +1,74 @@
-# strudel
+# 🎼 Strudel Local (Modded by Vincen)
 
-Live coding patterns on the web
-https://strudel.cc/
+Live coding patterns on the web — forked and modded by [Vincensius Christian Elang Putra](#), an Indonesian IT student passionate about generative music, AI, and glitchy beats.
 
-Development is moving to https://codeberg.org/uzu/strudel
+> ⚠️ Original Strudel maintained at: [https://codeberg.org/uzu/strudel](https://codeberg.org/uzu/strudel)  
+> Live version: [https://strudel.cc](https://strudel.cc)
 
-- Try it here: <https://strudel.cc>
-- Docs: <https://strudel.cc/learn>
-- Technical Blog Post: <https://loophole-letters.vercel.app/strudel>
-- 1 Year of Strudel Blog Post: <https://loophole-letters.vercel.app/strudel1year>
-- 2 Years of Strudel Blog Post: <https://strudel.cc/blog/#year-2>
+---
 
-## Running Locally
+## 🚀 Try Strudel Online
 
-After cloning the project, you can run the REPL locally:
+- 🌐 Web App: <https://strudel.cc>
+- 📚 Docs: <https://strudel.cc/learn>
+- 📝 Blog Posts:
+  - [Intro to Strudel](https://loophole-letters.vercel.app/strudel)
+  - [1 Year Recap](https://loophole-letters.vercel.app/strudel1year)
+  - [2 Years Recap](https://strudel.cc/blog/#year-2)
 
-1. Install [Node.js](https://nodejs.org/)
-2. Install [pnpm](https://pnpm.io/installation)
-3. Install dependencies by running the following command:
-   ```bash
-   pnpm i
-   ```
-4. Run the development server:
-   ```bash
-   pnpm dev
-   ```
+---
 
-## Using Strudel In Your Project
+## 💻 Running This Fork Locally
 
-This project is organized into many [packages](./packages), which are also available on [npm](https://www.npmjs.com/search?q=%40strudel).
+This repo contains a **custom version** of Strudel for local live coding experiments.
 
-Read more about how to use these in your own project [here](https://strudel.cc/technical-manual/project-start).
+### 📦 Requirements
 
-You will need to abide by the terms of the [GNU Affero Public Licence v3](LICENSE). As such, Strudel code can only be shared within free/open source projects under the same license -- see the license for details.
+- [Node.js](https://nodejs.org/)
+- [pnpm](https://pnpm.io/installation)
 
-Licensing info for the default sound banks can be found over on the [dough-samples](https://github.com/felixroos/dough-samples/blob/main/README.md) repository.
+### ▶️ Run Dev Server
 
-## Contributing
+```bash
+pnpm install
+pnpm dev
+```
 
-There are many ways to contribute to this project! See [contribution guide](./CONTRIBUTING.md). You can find the full list of contributors [here](https://codeberg.org/uzu/strudel/activity/contributors).
+Then open `http://localhost:4321` in your browser. You’re good to go.
 
-## Community
+---
 
-There is a #strudel channel on the TidalCycles discord: <https://discord.com/invite/HGEdXmRkzT>
+## 🧠 Using Strudel In Your Own Project
 
-You can also ask questions and find related discussions on the tidal club forum: <https://club.tidalcycles.org/>
+Strudel is a monorepo, containing multiple [packages](./packages) you can install independently via [npm](https://www.npmjs.com/search?q=%40strudel).
 
-The discord and forum is shared with the haskell (tidal) and python (vortex) siblings of this project.
+🛠️ Learn how to integrate:  
+<https://strudel.cc/technical-manual/project-start>
+
+---
+
+## 📜 License
+
+This project is licensed under **GNU Affero GPL v3**.  
+You are free to modify and distribute within open-source projects under the same license.
+
+Default sound bank licenses can be found here:  
+🎧 [dough-samples/README](https://github.com/felixroos/dough-samples/blob/main/README.md)
+
+---
+
+## 🤝 Contributing
+
+Wanna contribute? Check the [CONTRIBUTING.md](./CONTRIBUTING.md)  
+List of contributors: https://codeberg.org/uzu/strudel/activity/contributors
+
+---
+
+## 🌍 Community
+
+- 💬 Discord (#strudel channel): <https://discord.com/invite/HGEdXmRkzT>
+- 📢 Forum (Tidal Club): <https://club.tidalcycles.org/>
+
+> Also check out sibling projects:  
+> - **TidalCycles** (Haskell)  
+> - **Vortex** (Python)
