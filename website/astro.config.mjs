@@ -138,7 +138,6 @@ export default defineConfig({
     plugins: [bundleAudioWorkletPlugin()],
     resolve: {
       alias: {
-        '@strudel/superdough': 'C:/strudel/packages/superdough/index.mjs',
       },
     },
     ssr: {

@@ -49,6 +49,7 @@
   "dependencies": {
     "@strudel/core": "workspace:*",
     "@strudel/mini": "workspace:*",
+    "@strudel/superdough": "workspace:*",
     "@strudel/tonal": "workspace:*",
     "@strudel/transpiler": "workspace:*",
     "@strudel/webaudio": "workspace:*",

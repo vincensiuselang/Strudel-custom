@@ -14,6 +14,7 @@ import {
   resetLoadedSounds,
   initAudioOnFirstClick,
   resetDefaults,
+  initializeAudioOutput,
 } from '@strudel/webaudio';
 import { setVersionDefaultsFrom } from './util.mjs';
 import { StrudelMirror, defaultSettings } from '@strudel/codemirror';
@@ -203,6 +204,7 @@ export function useReplContext() {
   };
 
   const handleTogglePlay = async () => {
+    initializeAudioOutput();
     editorRef.current?.toggle();
   };
 

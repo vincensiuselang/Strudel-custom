@@ -35,7 +35,7 @@
   "dependencies": {
     "@strudel/core": "workspace:*",
     "@strudel/draw": "workspace:*",
-    "superdough": "workspace:*"
+    "@strudel/superdough": "workspace:*"
   },
   "devDependencies": {
     "vite": "^6.0.11"

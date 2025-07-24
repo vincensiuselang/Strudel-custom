@@ -40,7 +40,7 @@ export const saveRecording = async (audioBuffer, filename, format) => {
     document.body.removeChild(a);
 
     // Save to IndexedDB as well
-    await uploadSamplesToDB(userSamplesDBConfig, [{ name: title, blob: encodedBlob, id: title }], () => {
+    await uploadSamplesToDB(userSamplesDBConfig, [encodedBlob], () => {
       if (onRecordingCompleteCallback) {
         onRecordingCompleteCallback();
       }
@@ -117,6 +117,8 @@ export const startRecording = async () => {
   // Create a MediaStreamDestinationNode to capture the audio
   destinationNode = audioContext.createMediaStreamDestination();
 
+  // Ensure audio output is initialized before connecting
+  initializeAudioOutput();
   // Connect the main audio output to the destinationNode
   getDestinationGain().connect(destinationNode);
 

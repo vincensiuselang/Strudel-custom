@@ -32,6 +32,16 @@ const updateCodeWindow = (context, patternData, reset = false) => {
 
 const autoResetPatternOnChange = !isUdels();
 
+export function PatternLabel({ pattern }) {
+  const title = useMemo(() => {
+    if (!pattern) return null;
+    const meta = getMetadata(pattern.code || '');
+    return meta.title || pattern.name || pattern.id;
+  }, [pattern]);
+
+  return <>{title}</>;
+}
+
 // Context Menu for pattern/folder actions
 function ContextMenu({ onStartRename, onDelete, onClose, isFolder }) {
   return (

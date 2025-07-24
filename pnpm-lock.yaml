@@ -14,6 +14,9 @@ importers:
       '@strudel/mini':
         specifier: workspace:*
         version: link:packages/mini
+      '@strudel/superdough':
+        specifier: workspace:*
+        version: link:packages/superdough
       '@strudel/tonal':
         specifier: workspace:*
         version: link:packages/tonal
@@ -147,7 +150,7 @@ importers:
 
   examples/superdough:
     dependencies:
-      superdough:
+      '@strudel/superdough':
         specifier: workspace:*
         version: link:../../packages/superdough
     devDependencies:
@@ -622,7 +625,7 @@ importers:
       '@strudel/draw':
         specifier: workspace:*
         version: link:../draw
-      superdough:
+      '@strudel/superdough':
         specifier: workspace:*
         version: link:../superdough
     devDependencies:

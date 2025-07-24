@@ -1,6 +1,6 @@
 import { Pattern, clamp } from '@strudel/core';
 import { getDrawContext, getTheme } from '@strudel/draw';
-import { analysers, getAnalyzerData } from 'superdough';
+import { analysers, getAnalyzerData } from '@strudel/superdough';
 
 export function drawTimeScope(
   analyser,

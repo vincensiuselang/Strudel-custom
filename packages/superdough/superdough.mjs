@@ -194,10 +194,12 @@ export const setDefaultAudioContext = () => {
 };
 
 export const getAudioContext = () => {
-  if (!audioContext) {
+  if (!audioContext || audioContext.state === 'closed') {
     return setDefaultAudioContext();
   }
-
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
   return audioContext;
 };
 

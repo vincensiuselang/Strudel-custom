@@ -1,5 +1,5 @@
 {
-  "name": "superdough",
+  "name": "@strudel/superdough",
   "version": "1.2.3",
   "description": "simple web audio synth and sampler intended for live coding. inspired by superdirt and webdirt.",
   "main": "index.mjs",

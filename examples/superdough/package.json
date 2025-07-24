@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "superdough": "workspace:*"
+    "@strudel/superdough": "workspace:*"
   },
   "devDependencies": {
     "vite": "^6.0.11"

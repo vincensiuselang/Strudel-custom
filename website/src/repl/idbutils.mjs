@@ -107,16 +107,16 @@ export function registerSamplesFromDB(config = userSamplesDBConfig, onComplete =
                 return null;
               }
               const name = soundFile.title.substring(0, soundFile.title.lastIndexOf('.')) || soundFile.title;
-              return blobToDataUrl(soundFile.blob).then((soundPath) => ({ name, soundPath, title: soundFile.title }));
+              return { name, blob: soundFile.blob, title: soundFile.title };
             }),
           );
 
           const validSounds = results.filter(Boolean);
 
-          validSounds.forEach(({ name, soundPath }) => {
-            registerSound(name, (t, hapValue, onended) => onTriggerSample(t, hapValue, onended, [soundPath]), {
+          validSounds.forEach(({ name, blob }) => {
+            registerSound(name, (t, hapValue, onended) => onTriggerSample(t, hapValue, onended, [blob]), {
               type: 'sample',
-              samples: [{ path: soundPath, title: name }],
+              samples: [{ name: name, blob: blob }],
               baseUrl: undefined,
               prebake: false,
               tag: 'user',
@@ -151,24 +151,17 @@ async function blobToDataUrl(blob) {
 let uniqueIdCounter = 0; // To ensure unique IDs even if webkitRelativePath is identical or missing
 
 async function processFilesForIDB(files) {
-  const audioFiles = Array.from(files).filter((f) => isAudioFile(f.name));
   return Promise.all(
-    audioFiles.map((s) => {
-                  const originalName = s.name.substring(0, s.name.lastIndexOf('.')) || s.name;
+    Array.from(files).map((s) => {
+      // If 's' is already a Blob, use it directly. Otherwise, assume it's a File or similar object.
+      const blob = s instanceof Blob ? s : s.blob;
+      const name = s.name || `recording_${Date.now()}`; // Use existing name or generate a generic one
+      const originalName = name.substring(0, name.lastIndexOf('.')) || name;
       const sanitizedName = originalName.toLowerCase().replace(/[^a-z0-9_]+/g, '_');
-      const fileExtension = s.name.substring(s.name.lastIndexOf('.'));
+      const fileExtension = name.substring(name.lastIndexOf('.'));
       const title = `${sanitizedName}${fileExtension}`;
-      const sUrl = URL.createObjectURL(s);
-      return fetch(sUrl)
-        .then((res) => res.blob())
-        .then((blob) => {
-          URL.revokeObjectURL(sUrl);
-          const path = s.webkitRelativePath;
-          // Generate a unique ID for each file
-          // Use webkitRelativePath if available, otherwise combine title with a counter
-          const id = path?.length ? path : `${title}_${Date.now()}_${uniqueIdCounter++}`;
-          return { title, blob, id };
-        });
+      const id = `${sanitizedName}_${Date.now()}_${uniqueIdCounter++}`;
+      return { title, blob, id };
     }),
   );
 }
@@ -192,7 +185,11 @@ export function uploadSamplesToDB(config, files) {
 
       processedFiles.forEach((file) => {
         if (file != null) {
-          objectStore.put(file);
+          try {
+            objectStore.put(file);
+          } catch (e) {
+            console.error(`Error putting file ${file.title} into IndexedDB:`, e);
+          }
         }
       });
 

@@ -1,6 +1,6 @@
 import { Pattern, clamp } from '@strudel/core';
 import { getDrawContext, getTheme } from '@strudel/draw';
-import { analysers, getAnalyzerData } from 'superdough';
+import { analysers, getAnalyzerData } from '@strudel/superdough';
 
 /**
  * Renders a spectrum analyzer for the incoming audio signal.

@@ -117,7 +117,6 @@ export class Cyclist {
   stop() {
     logger('[cyclist] stop');
     this.clock.stop();
-    this.lastEnd = 0;
     this.setStarted(false);
   }
   async setPattern(pat, autostart = false) {

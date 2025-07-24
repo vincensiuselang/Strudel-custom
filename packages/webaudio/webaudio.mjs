@@ -5,7 +5,7 @@ This program is free software: you can redistribute it and/or modify it under th
 */
 
 import * as strudel from '@strudel/core';
-import { superdough, getAudioContext, setLogger, doughTrigger } from 'superdough';
+import { superdough, getAudioContext, setLogger, doughTrigger } from '@strudel/superdough';
 const { Pattern, logger, repl } = strudel;
 
 setLogger(logger);

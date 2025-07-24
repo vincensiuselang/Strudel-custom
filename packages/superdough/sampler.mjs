@@ -31,10 +31,16 @@ export function getSampleInfo(hapValue, bank) {
   let midi = valueToMidi(hapValue, 36);
   let transpose = midi - 36; // C3 is middle C;
   let sampleUrl;
+  let sampleBlob;
   let index = 0;
   if (Array.isArray(bank)) {
     index = getSoundIndex(n, bank.length);
-    sampleUrl = bank[index];
+    const sample = bank[index];
+    if (sample instanceof Blob) {
+      sampleBlob = sample;
+    } else {
+      sampleUrl = sample;
+    }
   } else {
     const midiDiff = (noteA) => noteToMidi(noteA) - midi;
     // object format will expect keys as notes
@@ -46,21 +52,29 @@ export function getSampleInfo(hapValue, bank) {
       );
     transpose = -midiDiff(closest); // semitones to repitch
     index = getSoundIndex(n, bank[closest].length);
-    sampleUrl = bank[closest][index];
+    const sample = bank[closest][index];
+    if (sample.blob) {
+      sampleBlob = sample.blob;
+      sampleUrl = undefined; // Ensure URL is not used if blob is present
+    } else {
+      sampleUrl = sample;
+    }
   }
   const label = `${s}:${index}`;
   let playbackRate = Math.abs(speed) * Math.pow(2, transpose / 12);
-  return { transpose, sampleUrl, index, midi, label, playbackRate };
+  return { transpose, sampleUrl, sampleBlob, index, midi, label, playbackRate };
 }
 
 // takes hapValue and returns buffer + playbackRate.
-export const getSampleBuffer = async (hapValue, bank, resolveUrl) => {
-  let { sampleUrl, label, playbackRate } = getSampleInfo(hapValue, bank);
-  if (resolveUrl) {
-    sampleUrl = await resolveUrl(sampleUrl);
-  }
+export const getSampleBuffer = async (hapValue, bank) => {
+  let { sampleUrl, sampleBlob, label, playbackRate } = getSampleInfo(hapValue, bank);
   const ac = getAudioContext();
-  const buffer = await loadBuffer(sampleUrl, ac, label);
+  let buffer;
+  if (sampleBlob) {
+    buffer = await ac.decodeAudioData(await sampleBlob.arrayBuffer());
+  } else {
+    buffer = await loadBuffer(sampleUrl, ac, label);
+  }
 
   if (hapValue.unit === 'c') {
     playbackRate = playbackRate * buffer.duration;
@@ -70,7 +84,7 @@ export const getSampleBuffer = async (hapValue, bank, resolveUrl) => {
 
 // creates playback ready AudioBufferSourceNode from hapValue
 export const getSampleBufferSource = async (hapValue, bank, resolveUrl) => {
-  let { buffer, playbackRate } = await getSampleBuffer(hapValue, bank, resolveUrl);
+  let { buffer, playbackRate } = await getSampleBuffer(hapValue, bank);
   if (hapValue.speed < 0) {
     // should this be cached?
     buffer = reverseBuffer(buffer);
@@ -283,7 +297,7 @@ export const samples = async (sampleMap, baseUrl = sampleMap._base || '', option
 
 const cutGroups = [];
 
-export async function onTriggerSample(t, value, onended, bank, resolveUrl) {
+export async function onTriggerSample(t, value, onended, bank) {
   let {
     s,
     nudge = 0, // TODO: is this in seconds?
@@ -295,36 +309,30 @@ export async function onTriggerSample(t, value, onended, bank, resolveUrl) {
     duration,
   } = value;
 
-  const { sampleUrl } = getSampleInfo(value, bank);
+  const { sampleUrl, sampleBlob } = getSampleInfo(value, bank);
   const ac = getAudioContext();
 
-  const cachedBuffer = getCachedBuffer(sampleUrl);
-  if (cachedBuffer) {
-    const bufferSource = ac.createBufferSource();
-    bufferSource.buffer = cachedBuffer;
-    bufferSource.playbackRate.value = speed;
-    const time = t + nudge;
-    bufferSource.start(time);
-    const out = ac.createGain();
-    bufferSource.connect(out);
-    bufferSource.onended = function () {
-      bufferSource.disconnect();
-      out.disconnect();
-      onended();
-    };
-    return { node: out, bufferSource, stop: (endTime) => bufferSource.stop(endTime) };
+  let buffer;
+  if (sampleBlob) {
+    try {
+      buffer = await ac.decodeAudioData(await sampleBlob.arrayBuffer());
+    } catch (e) {
+      logger(`[sampler] Error decoding audio data from Blob for "${s}:${n}": ${e.message}`, 'error');
+      return; // Stop processing if decoding fails
+    }
+  } else if (sampleUrl) { // Only try to load from URL if no Blob
+    buffer = await loadBuffer(sampleUrl, ac, s, n);
   }
 
-  // load sample
-  if (speed === 0) {
-    // no playback
+  if (!buffer) {
+    logger(`[sampler] could not load or decode sample "${s}:${n}"`, 'error');
     return;
   }
 
   // destructure adsr here, because the default should be different for synths and samples
   let [attack, decay, sustain, release] = getADSRValues([value.attack, value.decay, value.sustain, value.release]);
 
-  const { bufferSource, sliceDuration, offset } = await getSampleBufferSource(value, bank, resolveUrl);
+  const { bufferSource, sliceDuration, offset } = await getSampleBufferSource(value, bank);
 
   // asny stuff above took too long?
   if (ac.currentTime > t) {
