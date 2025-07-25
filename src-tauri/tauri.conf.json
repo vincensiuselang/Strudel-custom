@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "pnpm build",
+    "beforeDevCommand": "pnpm dev",
     "devPath": "http://localhost:4321",
     "distDir": "../website/dist",
     "withGlobalTauri": true
@@ -13,16 +13,20 @@
   },
   "tauri": {
     "allowlist": {
+      "all": false,
       "dialog": {
         "all": true
       },
       "clipboard": {
         "writeText": true
       },
-      "all": false,
       "fs": {
         "all": true,
-        "scope": ["$HOME/**", "$HOME", "$HOME/*"]
+        "scope": [
+          "$HOME/**",
+          "$HOME",
+          "$HOME/*"
+        ]
       }
     },
     "bundle": {

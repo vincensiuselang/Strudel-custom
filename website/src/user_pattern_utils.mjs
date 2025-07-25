@@ -5,6 +5,11 @@ import { nanoid } from 'nanoid';
 import { settingsMap } from './settings.mjs';
 import { confirmDialog, parseJSON, supabase } from './repl/util.mjs';
 
+let savePatternsTauri;
+if (typeof window !== 'undefined' && window.__TAURI__) {
+  import('./tauri_file_ops.mjs').then(module => { savePatternsTauri = module.savePatternsTauri; });
+}
+
 // #region Supabase / Public Patterns (No changes needed here)
 export let $publicPatterns = atom([]);
 export let $featuredPatterns = atom([]);
@@ -480,13 +485,74 @@ export async function importPatterns(fileList) {
   logger(`import done!`);
 }
 
+// --- KONFIGURASI ---
+
+// 1. Definisikan pemetaan dari sampel lokal Anda ke sampel default Strudel
+// Kiri: nama sampel lokal (atau bagian dari nama), Kanan: sampel default Strudel
+const sampleMap = {
+  'kick': 'bd',
+  'snare': 'sd',
+  'hat': 'hh',
+  'clap': 'cp',
+  'bass': 'cb',
+  // Tambahkan pemetaan lain sesuai kebutuhan Anda
+};
+
+// 2. Definisikan sampel fallback jika tidak ada pemetaan yang cocok
+const fallbackSample = 'cp'; // cp (clap) adalah pilihan yang aman dan terdengar jelas
+
+// --- FUNGSI UTAMA ---
+
+function cleanStrudelCode(code) {
+  let cleanedCode = code;
+
+  // Hapus semua chain .fx(...) untuk keamanan maksimum
+  cleanedCode = cleanedCode.replace(/\.fx\s*\([^)]+\)/g, '');
+
+  // Hapus fungsi yang tidak kompatibel seperti 'granular'
+  cleanedCode = cleanedCode.replace(/granular\s*\([^)]+\)/g, 's'); // Ganti granular() dengan s()
+
+  // Ganti sampel lokal dengan sampel default menggunakan sampleMap
+  const sampleRegex = /s\(([^)]+)\)/g;
+  cleanedCode = cleanedCode.replace(sampleRegex, (match, sampleGroup) => {
+    const samples = sampleGroup.replace(/['"`]/g, '').split(' ');
+    const newSamples = samples.map(s => {
+      // Cek apakah ini referensi file lokal
+      if (s.includes(':') || s.includes('/') || s.includes('\\')) {
+        const sampleName = s.split(/[:/\\]/).pop().toLowerCase();
+        for (const key in sampleMap) {
+          if (sampleName.includes(key)) {
+            return sampleMap[key];
+          }
+        }
+        return fallbackSample; // Jika tidak ada di map, gunakan fallback
+      }
+      // Jika bukan sampel lokal, coba petakan juga
+      for (const key in sampleMap) {
+        if (s.toLowerCase().includes(key)) {
+          return sampleMap[key];
+        }
+      }
+      // Jika tidak ada di map dan bukan path, biarkan apa adanya (mungkin sudah default)
+      return s;
+    }).join(' ');
+    return `s("${newSamples}")`;
+  });
+
+  return cleanedCode;
+}
+
 export async function exportPatterns() {
+  console.log('exportPatterns function called!');
+
   const userPatternsTree = userPattern.getAll();
   const flatPatterns = [];
 
   function collectPatterns(node) {
     if (node.type === 'pattern') {
-      flatPatterns.push(node);
+      // Clean the code before pushing
+      const cleanedNode = { ...node, code: cleanStrudelCode(node.code) };
+      flatPatterns.push(cleanedNode);
     } else if (node.type === 'folder' && node.children) {
       for (const childId in node.children) {
         collectPatterns(node.children[childId]);
@@ -495,13 +561,29 @@ export async function exportPatterns() {
   }
 
   collectPatterns(userPatternsTree);
+  console.log('Patterns collected:', flatPatterns.length);
 
-  const blob = new Blob([JSON.stringify(flatPatterns, null, 2)], { type: 'application/json' });
-  const downloadLink = document.createElement('a');
-  downloadLink.href = window.URL.createObjectURL(blob);
+  const jsonContent = JSON.stringify(flatPatterns, null, 2);
   const date = new Date().toISOString().split('T')[0];
-  downloadLink.download = `strudel_patterns_${date}.json`;
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
+  const defaultFilename = `strudel_patterns_${date}.json`;
+
+  if (typeof window !== 'undefined' && window.__TAURI__ && savePatternsTauri) {
+    // Use Tauri API for saving file
+    await savePatternsTauri(jsonContent, defaultFilename);
+  } else {
+    // Fallback to browser download method
+    console.log('Falling back to browser download method.');
+    const blob = new Blob([jsonContent], { type: 'application/json' });
+    const downloadLink = document.createElement('a');
+    downloadLink.href = window.URL.createObjectURL(blob);
+    downloadLink.target = '_blank';
+    downloadLink.download = defaultFilename;
+    document.body.appendChild(downloadLink);
+    
+    setTimeout(() => {
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      window.URL.revokeObjectURL(downloadLink.href);
+    }, 100);
+  }
 }

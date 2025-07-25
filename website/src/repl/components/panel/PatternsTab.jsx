@@ -257,6 +257,7 @@ function UserPatterns({ context }) {
   const { userPatterns } = useSettings(); // This will re-render when patterns change
   const viewingPatternData = parseJSON(useViewingPatternData());
   const [isRootDragOver, setIsRootDragOver] = useState(false);
+  const [showExportNotification, setShowExportNotification] = useState(false);
 
   const handleCreatePattern = () => {
     const { data } = userPattern.createAndAddToDB('root');
@@ -272,6 +273,14 @@ function UserPatterns({ context }) {
 
   const handleImportClick = () => {
     document.getElementById('import-input').click();
+  };
+
+  const handleExportClick = async () => {
+    await exportPatterns();
+    setShowExportNotification(true);
+    setTimeout(() => {
+      setShowExportNotification(false);
+    }, 3000);
   };
 
   const handleRootDrop = (e) => {
@@ -293,7 +302,7 @@ function UserPatterns({ context }) {
   };
 
   return (
-    <div className="flex flex-col gap-2 flex-grow overflow-hidden h-full pb-2">
+    <div className="relative flex flex-col gap-2 flex-grow overflow-hidden h-full pb-2">
       <div className="p-2 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 flex-wrap pb-2">
           <ActionButton onClick={handleCreatePattern} title="New Pattern">
@@ -323,7 +332,7 @@ function UserPatterns({ context }) {
             accept="text/plain,application/json"
             onChange={(e) => importPatterns(e.target.files)}
           />
-          <ActionButton onClick={exportPatterns} title="Export All Patterns">
+          <ActionButton onClick={handleExportClick} title="Export All Patterns">
             <ArrowDownTrayIcon className="w-4 h-4" />
             <span className="whitespace-nowrap">Export</span>
           </ActionButton>
@@ -336,6 +345,12 @@ function UserPatterns({ context }) {
           </ActionButton>
         </div>
       </div>
+
+      {showExportNotification && (
+        <div className="absolute bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-20">
+          Patterns exported successfully!
+        </div>
+      )}
 
       <div
         className={cx(
