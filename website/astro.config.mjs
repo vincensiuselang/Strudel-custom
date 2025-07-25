@@ -141,8 +141,13 @@ export default defineConfig({
       },
     },
     ssr: {
-      // Example: Force a broken package to skip SSR processing, if needed
-      // external: ['fraction.js'], // https://github.com/infusion/Fraction.js/issues/51
+      external: ['@tauri-apps/api', '@tauri-apps/api/dialog', '@tauri-apps/api/fs', '@tauri-apps/api/path'],
+      noExternal: ['react-lite-youtube-embed'],
+    },
+    build: {
+      rollupOptions: {
+        external: ['@tauri-apps/api', '@tauri-apps/api/dialog', '@tauri-apps/api/fs', '@tauri-apps/api/path'],
+      },
     },
   },
 });

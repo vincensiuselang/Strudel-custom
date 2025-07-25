@@ -4,6 +4,9 @@ packages:
   - tools/dbpatch
   - website/
 
+ignoredBuiltDependencies:
+  - '@tailwindcss/oxide'
+
 onlyBuiltDependencies:
   - esbuild
   - nx
